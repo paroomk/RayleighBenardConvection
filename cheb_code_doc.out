@@ -1,7 +1,0 @@
-\BOOKMARK [1][-]{section.1}{Governing Equations}{}% 1
-\BOOKMARK [1][-]{section.2}{Spatial Discretization}{}% 2
-\BOOKMARK [2][-]{subsection.2.1}{x-Discretization}{section.2}% 3
-\BOOKMARK [2][-]{subsection.2.2}{y-Discretization}{section.2}% 4
-\BOOKMARK [1][-]{section.3}{Temporal Discretization}{}% 5
-\BOOKMARK [1][-]{section.4}{Verification and Validation \(V\046V\)}{}% 6
-\BOOKMARK [2][-]{subsection.4.1}{Mean-Flow Implementation}{section.4}% 7
