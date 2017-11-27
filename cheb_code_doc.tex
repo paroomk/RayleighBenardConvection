@@ -7,7 +7,7 @@
 
 \usepackage{amsmath, amsfonts}
 \usepackage[margin=0.75in]{geometry}
-
+\usepackage[pdftex]{graphicx}
 \usepackage[dvipsnames]{xcolor}
 \newcommand\myshade{85}
 \colorlet{mylinkcolor}{violet}
@@ -267,5 +267,47 @@
     then we did a mesh refinement by factors of $2$ in the $x$-direction.  In each case 
     we plotted the $L_{2}$ error as a function of mesh parameter to make sure that we 
     achieved the correct convergence rate.
+    
+     \section{Results}
+     \subsection{Effect of Mean Flow}
+     The presence of mean flow is found to be a deterrent to heat transport. Our simulation results show that the mean flow lowers the average $Nu$ in the flow as shown in fig 1 at $Pr = 4, Ra = 1E7$. This could be due to distortions introduced by the mean flow in the coherent structures responsible for heat transport. A profile of the mean flow at given time instant is shown in fig 2.
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{Nu1E74301opt.png}
+     	\caption{Comparison of Nusselt numbers with and without mean flow at $Pr = 4, Ra = 1E7$ in 3.01 X optimal box.}
+     	\label{fig:fig1}
+     \end{figure}
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{umean.png}
+     	\caption{Mean flow profile at $Pr = 4, Ra = 1E7$ in 3.01*optimal box.}
+     	\label{fig:fig1}
+     \end{figure}
+     
+     Therefore, it was decided to that the mean flow be omitted in our future studies since it could interfere with the formation of the optimal coherent structures whose signatures we are trying to detect.
+     
+      \subsection{Simulations in the Optimal Box}
+      
+      Confinement of flow in the optimal box results in the formation of structures very similar to the optimal coherent structures in all the cases that have been looked at so far. In the absence of mean flow, the signature is more pronounced and the averaged structure in a cycle closely resembles the optimal structure as shown fig 3.
+      
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{1E7opt.png}
+      	\caption{Flow field at a given time instant, $Pr = 7, Ra = 1E7$ in optimal box}
+      	\label{fig:fig3}
+      \end{figure}
+      
+ %     \begin{figure}[!htb]
+  %    	\includegraphics[width=\linewidth]{1E7optavg.png}
+   %   	\caption{Time-averaged flow field, $Pr = 7, Ra = 1E7$ in optimal box}
+    %  	\label{fig:fig3}
+     % \end{figure}
+      
+      The only caveat is that by restricting the flow in the optimal box, turbulence is suppressed; the flow is found to be steady/periodic even at high Rayleigh numbers ($Ra = 1E7$) as shown in fig 4.
+      
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{Nu1E77opt.png}
+      	\caption{$Nu$ variation with time at $Pr = 7, Ra = 1E7$ in optimal box (red line denotes the optimal $Nu$).}
+      	\label{fig:fig5}
+      \end{figure}  
 
 \end{document}
