@@ -27,7 +27,7 @@
     urlcolor=myurlcolor!\myshade!black,
 }
 
-\title{Thermal Convection Chebyshev Code}
+\title{2D Rayleigh Benard Convection}
 %\author{}
 
 \begin{document}
@@ -272,6 +272,24 @@
     we plotted the $L_{2}$ error as a function of mesh parameter to make sure that we 
     achieved the correct convergence rate.
     
+    \section{Post-processing}
+    
+    \subsection{Energy Spectra}
+    
+    In order to find the total energy spectra, we first find the conserved energy term by manipulating the governing equations. The fundamental governing equations for this system are shown below.
+    
+    
+    \begin{align}
+    \frac{\partial \vec{u}}{\partial t} + \lr{\vec{u} \cdot \nabla \vec{u}} - \nu_*\lr{\lapl \vec{u}} + \nabla P - T\hat k = 0 \\
+    \frac{\partial T}{\partial t} + \mathbf{u}\cdot\nabla T - v = \kappa_{*}\lapl T \\
+    \end{align}
+    
+    We take the inner product of the two equations with $\vec{u}$ and $T$ respectively and add the two equations to get the total energy equation given by,
+    
+    \begin{align}
+    \frac{1}{2}\frac{D\lr{|\vec{u}|^2 + |{T}^2|}}{D t} = \nu_*\vec u \cdot \lr{\lapl \vec{u}} - \vec u \cdot \nabla P  +  2(vT) + \nu_* T \lapl T\\
+    \end{align}
+    
      \section{Results}
      \subsection{Effect of Mean Flow}
      The presence of mean flow is found to be a deterrent to heat transport. Our simulation results show that the mean flow lowers the average $Nu$ in the flow as shown in fig 1 at $Pr = 4, Ra = 1E7$. This could be due to distortions introduced by the mean flow in the coherent structures responsible for heat transport. A profile of the mean flow at given time instant is shown in fig 2.
@@ -288,7 +306,7 @@
      	\label{fig:fig1}
      \end{figure}
      
-     Therefore, it was decided to that the mean flow be omitted in our future studies since it could interfere with the formation of the optimal coherent structures whose signatures we are trying to detect.
+     Therefore, it was decided that the mean flow be omitted in our future studies since it could interfere with the formation of optimal coherent structures whose signatures we are trying to detect.
      
       \subsection{Simulations in the Optimal Box}
       
@@ -313,5 +331,136 @@
       	\caption{$Nu$ variation with time at $Pr = 7, Ra = 1E7$ in optimal box (red line denotes the optimal $Nu$).}
       	\label{fig:fig5}
       \end{figure}  
+      
+      \subsection{Comparison of flow at Ra = 1E7, Pr = 4 in various box sizes}
+      
+      Simulations were carried out in various boxes where the length is set to be an integral multiple of the optimal box size corresponding to $\alpha_{opt} = alpha = 0.4714574564629509E+001$ at $Ra = 1E7$ and $Pr = 4$. Note that the mean flow is forced to be 0 in all the cases reported.
+      
+      Figure 6 shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in Figure 7. These clearly show that the average Nusselt number keeps dropping with increase in box size. Also note from Figure 6 that the amplitude of oscillations also drops with increase in box size. This may be related to the increased size of the plumes/coherent structures in larger boxes.
+      
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{Nu_1E7_4_boxes.png}
+      	\caption{$Nu$ variation with time at $Pr = 4, Ra = 1E7$ in various box sizes.}
+      	\label{fig:fig6}
+      \end{figure} 
+      
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{Nu_size.png}
+      	\caption{$Nu_{avg}$ variation with box size for $Pr = 4, Ra = 1E7$.}
+      	\label{fig:fig7}
+      \end{figure} 
+      
+      The contours of $T,u,w$ are plotted in Figures 8-13 for the 5 cases considered. The time is chosen such that the flow has attained a statistically steady state.
+      
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{contours_1E7_4_3.png}
+      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 3* l_{opt} $ }
+      	\label{fig:fig8}
+      	\end{figure}
+      	
+      	\begin{figure}[!htb]
+      		\includegraphics[width=\linewidth]{contours_1E7_4_6.png}
+      		\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 6* l_{opt} $ }
+      		\label{fig:fig9}
+      	\end{figure}
 
+   \begin{figure}[!htb]
+   	\includegraphics[width=\linewidth]{contours_1E7_4_12.png}
+   	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 12* l_{opt} $ }
+   	\label{fig:fig10}
+   \end{figure}
+   
+   \begin{figure}[!htb]
+   	\includegraphics[width=\linewidth]{contours_1E7_4_24.png}
+   	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 24* l_{opt} $ }
+   	\label{fig:fig11}
+   \end{figure}
+   
+   \begin{figure}[!htb]
+   	\includegraphics[width=\linewidth]{contours_1E7_4_32.png}
+   	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 32* l_{opt} $ }
+   	\label{fig:fig12}
+   \end{figure}
+
+A comparison of the energy spectra for the various cases are shown in Figures 13-15. The energy spectra is plotted along $y = 0$. Note that the length scale corresponding to the largest energy in all 3 cases keeps decreasing with increase in box size.
+
+  \begin{figure}[!htb]
+  	\includegraphics[width=\linewidth]{1E7_4_ThE.png}
+  	\caption{ Thermal energy spectra at $Ra = 1E7, Pr =4$ along $y = 0$}
+  	\label{fig:fig13}
+  \end{figure}
+
+\begin{figure}[!htb]
+	\includegraphics[width=\linewidth]{1E7_4_KE.png}
+	\caption{ Kinetic energy spectra at $Ra = 1E7, Pr =4$ along $y = 0$}
+	\label{fig:fig14}
+\end{figure}
+
+\begin{figure}[!htb]
+	\includegraphics[width=\linewidth]{1E7_4_TE.png}
+	\caption{ Total energy spectra at $Ra = 1E7, Pr =4$ along $y = 0$}
+	\label{fig:fig15}
+\end{figure}
+
+\subsection{Comparison of flow at Ra = 1E7, Pr = 10 in various box sizes}
+
+Simulations were carried out in various boxes where the length is set to be an integral multiple of the optimal box size $(24, 6, 3)$ corresponding to $\alpha_{opt} = alpha = 0.1560021496301813E+002$ at $Ra = 1E7$ and $Pr = 10$. Note that the mean flow is forced to be 0 in all the cases reported.
+
+Figure 16 shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in Figure 17. 
+
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{Nu_1E7_10.png}
+     	\caption{$Nu$ variation with time at $Pr = 10, Ra = 1E7$ in various box sizes.}
+     	\label{fig:fig16}
+     \end{figure} 
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{Nu_avg_1E7_10.png}
+     	\caption{$Nu_{avg}$ variation with box size for $Pr = 10, Ra = 1E7$.}
+     	\label{fig:fig17}
+     \end{figure} 
+     
+     The contours of $T,u,w$ are plotted in Figures 18-20 for the 3 cases considered. The time is chosen such that the flow has attained a statistically steady state.
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{contours_1E7_10_3.png}
+     	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 3* l_{opt} $ }
+     	\label{fig:fig18}
+     \end{figure}
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{contours_1E7_10_6.png}
+     	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 6* l_{opt} $ }
+     	\label{fig:fig20}
+     \end{figure}
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{contours_1E7_10_24.png}
+     	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 24* l_{opt} $ }
+     	\label{fig:fig21}
+     \end{figure}
+     
+     A comparison of the energy spectra for the various cases are shown in Figures 22-24. The energy spectra is plotted along $y = 0$. 
+     
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{ThE_1E7_10.png}
+      	\caption{ Thermal energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
+      	\label{fig:fig22}
+      \end{figure}
+      
+       \clearpage
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{KE_1E7_10.png}
+     	\caption{ Kinetic energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
+     	\label{fig:fig23}
+     \end{figure}
+     
+      \begin{figure}[!htb]
+      	\includegraphics[width=\linewidth]{TE_1E7_10.png}
+      	\caption{ Total energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
+      	\label{fig:fig24}
+      \end{figure}
+     
+    
 \end{document}
