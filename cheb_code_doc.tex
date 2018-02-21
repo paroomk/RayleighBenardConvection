@@ -290,6 +290,11 @@
     \frac{1}{2}\frac{D\lr{|\vec{u}|^2 + |{T}^2|}}{D t} = \nu_*\vec u \cdot \lr{\lapl \vec{u}} - \vec u \cdot \nabla P  +  2(vT) + \nu_* T \lapl T\\
     \end{align}
     
+    \subsection{Momentum Boundary Layer}
+    
+    The thickness of momentum boundary layer is calculated from the vertical profiles of the squares of normal components of stresses summed over all dimensions $(/partial_x u)^2 + (/partial_y v)^2$ which is a measure of the total magnitude of normal stress. The horizontally averaged profile shows a well defined peak close to the bottom plate as shown in fig 25. The $z$ location corresponding to this peak is defined as the momentum boundary layer thickness. This location is considered to be the location with the strongest plume merging and convolution takes place.
+    
+    
      \section{Results}
      \subsection{Effect of Mean Flow}
      The presence of mean flow is found to be a deterrent to heat transport. Our simulation results show that the mean flow lowers the average $Nu$ in the flow as shown in fig 1 at $Pr = 4, Ra = 1E7$. This could be due to distortions introduced by the mean flow in the coherent structures responsible for heat transport. A profile of the mean flow at given time instant is shown in fig 2.
@@ -382,6 +387,12 @@
    	\label{fig:fig12}
    \end{figure}
 
+ \begin{figure}[!htb]
+ 	\includegraphics[width=\linewidth]{contours_1E7_4_64.png}
+ 	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =4, l_b = 64* l_{opt} $ }
+ 	\label{fig:fig12}
+ \end{figure}
+
 A comparison of the energy spectra for the various cases are shown in Figures 13-15. The energy spectra is plotted along $y = 0$. Note that the length scale corresponding to the largest energy in all 3 cases keeps decreasing with increase in box size.
 
   \begin{figure}[!htb]
@@ -428,6 +439,15 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
      	\label{fig:fig18}
      \end{figure}
      
+     \clearpage
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{contours_1E7_10_5.png}
+     	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 5* l_{opt} $ }
+     	\label{fig:fig20}
+     \end{figure}
+     
+     
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_6.png}
      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 6* l_{opt} $ }
@@ -435,10 +455,29 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
      \end{figure}
      
      \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{contours_1E7_10_12.png}
+     	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 12* l_{opt} $ }
+     	\label{fig:fig20}
+     \end{figure}
+     
+     
+     \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_24.png}
      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 24* l_{opt} $ }
      	\label{fig:fig21}
      \end{figure}
+     
+       \begin{figure}[!htb]
+       	\includegraphics[width=\linewidth]{contours_1E7_10_32.png}
+       	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 32* l_{opt} $ }
+       	\label{fig:fig21}
+       \end{figure}
+       
+        \begin{figure}[!htb]
+        	\includegraphics[width=\linewidth]{contours_1E7_10_64.png}
+        	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 64* l_{opt} $ }
+        	\label{fig:fig21}
+        \end{figure}
      
      A comparison of the energy spectra for the various cases are shown in Figures 22-24. The energy spectra is plotted along $y = 0$. 
      
@@ -448,7 +487,6 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
       	\label{fig:fig22}
       \end{figure}
       
-       \clearpage
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{KE_1E7_10.png}
@@ -462,5 +500,12 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
       	\label{fig:fig24}
       \end{figure}
      
+     A comparison of the momentum boundary layer for the various cases are shown in Figures 25.  
+     
+     \begin{figure}[!htb]
+     	\includegraphics[width=\linewidth]{BL_1E7_10.png}
+     	\caption{ Vertical profile of total normal stress magnitude at $Ra = 1E7, Pr =10$ for various box sizes}
+     	\label{fig:fig25}
+     \end{figure}
     
 \end{document}
