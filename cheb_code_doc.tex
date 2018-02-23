@@ -290,14 +290,43 @@
     \frac{1}{2}\frac{D\lr{|\vec{u}|^2 + |{T}^2|}}{D t} = \nu_*\vec u \cdot \lr{\lapl \vec{u}} - \vec u \cdot \nabla P  +  2(vT) + \nu_* T \lapl T\\
     \end{align}
     
+    The following test case was used to verify the energy spectrum code. Here $x \in [0,2\pi]$ 
+    
+    $$T(x) = sin(3x) + 4cos(t) + 5$$
+    
+    $$\hat {T}(k) = \frac{i}{4} \delta(k-3) + 2 \delta(k-1) + 5 \delta(k) -  \frac{i}{4} \delta(k+3) + 2 \delta(k+1)$$
+    
+    $$ E(k) = 0.5 \hat {T}(k) * \hat {T}(k) = 0.125 \delta(k-3) + 4 \delta(k-1) + 12.5 \delta(k) + 0.125 \delta(k+3) + 4 \delta(k+1)$$
+    
+    And finally after binning wavenumbers ($k'$ and $-k'$ in the 1D case), we have,
+    
+    $$ E(k) = 0.25\delta(k-3) + 4\delta(k-1) + 12.5\delta(k)$$
+    
+    Results from the code are shown in the figures \ref{fig:t1} and \ref{fig:t2}.
+
+   \begin{figure}[!htb]
+   	\includegraphics[width=\linewidth]{test1.png}
+   	\caption{Test function plotted in its domain}
+   	\label{fig:t1}
+   \end{figure}
+   
+    \begin{figure}[!htb]
+    	\includegraphics[width=\linewidth]{test2.png}
+    	\caption{Energy spectrum of the test function}
+    	\label{fig:t2}
+    \end{figure}
+    
+    Clearly, the computed energy spectrum is in agreement with the exact expression calculated.
+    
+    
     \subsection{Momentum Boundary Layer}
     
-    The thickness of momentum boundary layer is calculated from the vertical profiles of the squares of normal components of stresses summed over all dimensions $(/partial_x u)^2 + (/partial_y v)^2$ which is a measure of the total magnitude of normal stress. The horizontally averaged profile shows a well defined peak close to the bottom plate as shown in fig 25. The $z$ location corresponding to this peak is defined as the momentum boundary layer thickness. This location is considered to be the location with the strongest plume merging and convolution takes place.
+    The thickness of momentum boundary layer is calculated from the vertical profiles of the squares of normal components of stresses summed over all dimensions $(\partial_x u)^2 + (\partial_y v)^2$ which is a measure of the total magnitude of normal stress. The horizontally averaged profile shows a well defined peak close to the bottom plate as shown in figure \ref{fig:fig28}. The $z$ location corresponding to this peak is defined as the momentum boundary layer thickness. This location is considered to be the location with the strongest plume merging and convolution takes place.
     
     
      \section{Results}
      \subsection{Effect of Mean Flow}
-     The presence of mean flow is found to be a deterrent to heat transport. Our simulation results show that the mean flow lowers the average $Nu$ in the flow as shown in fig 1 at $Pr = 4, Ra = 1E7$. This could be due to distortions introduced by the mean flow in the coherent structures responsible for heat transport. A profile of the mean flow at given time instant is shown in fig 2.
+     The presence of mean flow is found to be a deterrent to heat transport. Our simulation results show that the mean flow lowers the average $Nu$ in the flow as shown in figure \ref{fig:fig1} at $Pr = 4, Ra = 1E7$. This could be due to distortions introduced by the mean flow in the coherent structures responsible for heat transport. A profile of the mean flow at given time instant is shown in figure \ref{fig:fig2}.
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{Nu1E74301opt.png}
@@ -308,14 +337,14 @@
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{umean.png}
      	\caption{Mean flow profile at $Pr = 4, Ra = 1E7$ in 3.01*optimal box.}
-     	\label{fig:fig1}
+     	\label{fig:fig2}
      \end{figure}
      
      Therefore, it was decided that the mean flow be omitted in our future studies since it could interfere with the formation of optimal coherent structures whose signatures we are trying to detect.
      
       \subsection{Simulations in the Optimal Box}
       
-      Confinement of flow in the optimal box results in the formation of structures very similar to the optimal coherent structures in all the cases that have been looked at so far. In the absence of mean flow, the signature is more pronounced and the averaged structure in a cycle closely resembles the optimal structure as shown fig 3.
+      Confinement of flow in the optimal box results in the formation of structures very similar to the optimal coherent structures in all the cases that have been looked at so far. In the absence of mean flow, the signature is more pronounced and the averaged structure in a cycle closely resembles the optimal structure as shown figure \ref{fig:fig3}.
       
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{1E7opt.png}
@@ -329,7 +358,7 @@
     %  	\label{fig:fig3}
      % \end{figure}
       
-      The only caveat is that by restricting the flow in the optimal box, turbulence is suppressed; the flow is found to be steady/periodic even at high Rayleigh numbers ($Ra = 1E7$) as shown in fig 4.
+      The only caveat is that by restricting the flow in the optimal box, turbulence is suppressed; the flow is found to be steady/periodic even at high Rayleigh numbers ($Ra = 1E7$) as shown in \ref{fig:fig5}.
       
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{Nu1E77opt.png}
@@ -341,7 +370,7 @@
       
       Simulations were carried out in various boxes where the length is set to be an integral multiple of the optimal box size corresponding to $\alpha_{opt} = alpha = 0.4714574564629509E+001$ at $Ra = 1E7$ and $Pr = 4$. Note that the mean flow is forced to be 0 in all the cases reported.
       
-      Figure 6 shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in Figure 7. These clearly show that the average Nusselt number keeps dropping with increase in box size. Also note from Figure 6 that the amplitude of oscillations also drops with increase in box size. This may be related to the increased size of the plumes/coherent structures in larger boxes.
+      Figure \ref{fig:fig6} shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in figure \ref{fig:fig7}. These clearly show that the average Nusselt number keeps dropping with increase in box size. Also note from Figure 6 that the amplitude of oscillations also drops with increase in box size. This may be related to the increased size of the plumes/coherent structures in larger boxes.
       
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{Nu_1E7_4.png}
@@ -355,7 +384,7 @@
       	\label{fig:fig7}
       \end{figure} 
       
-      The contours of $T,u,w$ are plotted in Figures 8-13 for the 5 cases considered. The time is chosen such that the flow has attained a statistically steady state.
+      The contours of $T,u,w$ are plotted in Figures \ref{fig:fig8}-\ref{fig:fig13} for the 5 cases considered. The time is chosen such that the flow has attained a statistically steady state.
       
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{contours_1E7_4_3.png}
@@ -393,7 +422,7 @@
  	\label{fig:fig12}
  \end{figure}
 
-A comparison of the energy spectra for the various cases are shown in Figures 13-15. The energy spectra is plotted along $y = 0$. Note that the length scale corresponding to the largest energy in all 3 cases keeps decreasing with increase in box size.
+A comparison of the energy spectra for the various cases are shown in Figures \ref{fig:fig13}-\ref{fig:fig15}. The energy spectra is plotted along $y = 0$. Note that the length scale corresponding to the largest energy in all 3 cases keeps decreasing with increase in box size.
 
   \begin{figure}[!htb]
   	\includegraphics[width=\linewidth]{ThE_1E7_4.png}
@@ -417,7 +446,7 @@ A comparison of the energy spectra for the various cases are shown in Figures 13
 
 Simulations were carried out in various boxes where the length is set to be an integral multiple of the optimal box size $(24, 6, 3)$ corresponding to $\alpha_{opt} = alpha = 0.1560021496301813E+002$ at $Ra = 1E7$ and $Pr = 10$. Note that the mean flow is forced to be 0 in all the cases reported.
 
-Figure 16 shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in Figure 17. 
+Figure \ref{fig:fig16} shows the variation of $Nu$ with time for the different cases and the variation in average $Nu$ with box size is shown in Figure \ref{fig:fig17}. 
 
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{Nu_1E7_10.png}
@@ -431,7 +460,7 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
      	\label{fig:fig17}
      \end{figure} 
      
-     The contours of $T,u,w$ are plotted in Figures 18-20 for the 3 cases considered. The time is chosen such that the flow has attained a statistically steady state.
+     The contours of $T,u,w$ are plotted in Figures \ref{fig:fig18}-\ref{fig:fig24} for the 6 cases considered. The time is chosen such that the flow has attained a statistically steady state.
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_3.png}
@@ -444,7 +473,7 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_5.png}
      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 5* l_{opt} $ }
-     	\label{fig:fig20}
+     	\label{fig:fig19}
      \end{figure}
      
      
@@ -457,55 +486,55 @@ Figure 16 shows the variation of $Nu$ with time for the different cases and the 
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_12.png}
      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 12* l_{opt} $ }
-     	\label{fig:fig20}
+     	\label{fig:fig21}
      \end{figure}
      
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{contours_1E7_10_24.png}
      	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 24* l_{opt} $ }
-     	\label{fig:fig21}
+     	\label{fig:fig22}
      \end{figure}
      
        \begin{figure}[!htb]
        	\includegraphics[width=\linewidth]{contours_1E7_10_32.png}
        	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 32* l_{opt} $ }
-       	\label{fig:fig21}
+       	\label{fig:fig23}
        \end{figure}
        
         \begin{figure}[!htb]
         	\includegraphics[width=\linewidth]{contours_1E7_10_64.png}
         	\caption{Temperature, horizontal and vertical velocity contours for $Ra = 1E7, Pr =10, l_b = 64* l_{opt} $ }
-        	\label{fig:fig21}
+        	\label{fig:fig24}
         \end{figure}
      
-     A comparison of the energy spectra for the various cases are shown in Figures 22-24. The energy spectra is plotted along $y = 0$. 
+     A comparison of the energy spectra for the various cases are shown in Figures \ref{fig:fig25}-\ref{fig:fig27}. The energy spectra is plotted along $y = 0$. 
      
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{ThE_1E7_10.png}
       	\caption{ Thermal energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
-      	\label{fig:fig22}
+      	\label{fig:fig25}
       \end{figure}
       
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{KE_1E7_10.png}
      	\caption{ Kinetic energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
-     	\label{fig:fig23}
+     	\label{fig:fig26}
      \end{figure}
      
       \begin{figure}[!htb]
       	\includegraphics[width=\linewidth]{TE_1E7_10.png}
       	\caption{ Total energy spectra at $Ra = 1E7, Pr =10$ along $y = 0$}
-      	\label{fig:fig24}
+      	\label{fig:fig27}
       \end{figure}
      
-     A comparison of the momentum boundary layer for the various cases are shown in Figures 25.  
+     A comparison of the momentum boundary layer for the various cases are shown in Figures \ref{fig:fig28}.  
      
      \begin{figure}[!htb]
      	\includegraphics[width=\linewidth]{BL_1E7_10.png}
      	\caption{ Vertical profile of total normal stress magnitude at $Ra = 1E7, Pr =10$ for various box sizes}
-     	\label{fig:fig25}
+     	\label{fig:fig28}
      \end{figure}
     
 \end{document}
