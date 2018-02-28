@@ -26,44 +26,63 @@ def plot_energy_spectra():
 
    # Solution fields
    T = np.array(f['tasks/b'])
-   Txy = T[1,:,:] # Get temperature field at specific time
+   u = np.array(f['tasks/u'])
+   v = np.array(f['tasks/w'])
+
+   # Get fieldls at specific time
+   Txy = T[1,:,:]
+   uxy = u[1,:,:]
+   vxy = v[1,:,:]
    #T = T[10,:,Nz//2] # Get T near center and at specific time
    T = T[1,:,50] # Get T near the wall and at specific time
+   u = u[1,:,50] # Get u near the wall and at specific time
+   v = v[1,:,50] # Get v near the wall and at specific time
 
    #Ta = T - z[50]
 
    # Energy
    ET = 0.5 * T * T
+   EK = 0.5 * (u * u + v * v)
 
    # Plot in physical space
-   fig1, ax1 = plt.subplots(1,1)
-   ax1.plot(x,T)
+   #fig1, ax1 = plt.subplots(1,1)
+   #ax1.plot(x,T)
 
-   fig2, ax2 = plt.subplots(1,1, figsize=(10,0.75*10))
-   ax2.plot(x,ET)
-   ax2.set_ylabel(r'$K_{T} = \frac{1}{2}T^{2}$')
-   ax2.set_xlabel(r'$x$')
-   ax2.set_xlabel(r'$x$')
-   fig2.tight_layout()
-   fig2.savefig('K_T_ymid.pdf')
+   #fig2, ax2 = plt.subplots(1,1, figsize=(10,0.75*10))
+   #ax2.plot(x,ET)
+   #ax2.set_ylabel(r'$K_{T} = \frac{1}{2}T^{2}$')
+   #ax2.set_xlabel(r'$x$')
+   #ax2.set_xlabel(r'$x$')
+   #fig2.tight_layout()
+   #fig2.savefig('K_T_ymid.pdf')
 
    # Take FFT
    Tk = np.fft.fft(T) / Nx
-   ETk = np.fft.fft(ET) / Nx
+   uk = np.fft.fft(u) / Nx
+   vk = np.fft.fft(v) / Nx
 
-   # Compute FFT of Txy in x
+   # Compute FFT of fields in x
    Tky = np.fft.fft(Txy, axis=0) / Nx
-   #print(Tky[:,50] - Tk)
+   uky = np.fft.fft(uxy, axis=0) / Nx
+   vky = np.fft.fft(vxy, axis=0) / Nx
    
-   # Compute average of Txy in y
+   # Compute y-average
    Tbar = np.zeros(Nx)
+   ubar = np.zeros(Nx)
+   vbar = np.zeros(Nx)
    for ii in range(Nx):
        for idy, deltaz in enumerate(dz):
            Tbar[ii] += Txy[ii,idy+1] * deltaz
+           ubar[ii] += uxy[ii,idy+1] * deltaz
+           vbar[ii] += vxy[ii,idy+1] * deltaz
    Tbar /= Lz
+   ubar /= Lz
+   vbar /= Lz
 
-   # Take FFT of Tbar
+   # Take FFT of y-averages
    Tbark = np.fft.fft(Tbar) / Nx
+   ubark = np.fft.fft(ubar) / Nx
+   vbark = np.fft.fft(vbar) / Nx
 
    # Set up wavenumbers
    kx = np.zeros(Nx)
@@ -75,65 +94,103 @@ def plot_energy_spectra():
    # Compute energy in Fourier space
    NF = Nx
    kmax = NF // 2
-   Ek = np.zeros(NF//2, dtype=np.complex_)
-   Ebark = np.zeros(NF//2, dtype=np.complex_)
+   #kmax = np.ceil(NF / 2)
+   #NF = int(np.floor(2.0 * Nx / 3.0))
+   ETk = np.zeros(int(kmax), dtype=np.complex_)
+   ETbark = np.zeros(int(kmax), dtype=np.complex_)
+   EKk = np.zeros(int(kmax), dtype=np.complex_)
+   EKbark = np.zeros(int(kmax), dtype=np.complex_)
    k  = np.arange(0.0, kmax)
    for ii in range(Nx):
       kmag = abs(kx[ii])
       if (kmag < kmax):
-         Ek[int(kmag)] = Ek[int(kmag)] + 0.5*Tk[ii] * np.conj(Tk[ii])
-         Ebark[int(kmag)] = Ebark[int(kmag)] + \
+         ETk[int(kmag)] = ETk[int(kmag)] + 0.5 * Tk[ii] * np.conj(Tk[ii])
+         ETbark[int(kmag)] = ETbark[int(kmag)] + \
            0.5 * Tbark[ii] * np.conj(Tbark[ii])
 
+         EKk[int(kmag)] = EKk[int(kmag)] + \
+             0.5 * (uk[ii] * np.conj(uk[ii]) + vk[ii] * np.conj(vk[ii]))
+         EKbark[int(kmag)] = EKbark[int(kmag)] + \
+             0.5 * (ubark[ii] * np.conj(ubark[ii]) + 
+                    vbark[ii] * np.conj(vbark[ii]))
+
    figE, axE = plt.subplots(1,1, figsize=(10,0.75*10))
-   axE.plot(k, np.real(Ek))
-   axE.plot(k, np.real(Ebark))
+   axE.plot(k, np.real(ETk), label=r'$E_{T}$')
+   axE.plot(k, np.real(EKk), label=r'$E_{K}$')
    axE.set_xscale('log')
    axE.set_yscale('log')
+   axE.set_xlim(k[1], k.max())
+   axE.set_ylim(1.0e-17, max(np.real(ETk).max(), np.real(EKk).max()))
    axE.set_xlabel(r'$k$')
-   axE.set_ylabel(r'$E_{T}\left(k\right)$')
+   axE.set_ylabel(r'$E\left(k\right)$')
    axE.set_title(r'Spectrum at $y\approx y_{\textrm{wall}}$')
    #axE.set_title(r'Spectrum at $y\approx y_{\textrm{mid}}$')
+   axE.legend()
 
    figE.tight_layout()
-   figE.savefig('ET_ywall.pdf')
+   figE.savefig('Ek_ywall.pdf')
+
+   figEbar, axEbar = plt.subplots(1,1, figsize=(10,0.75*10))
+   axEbar.plot(k, np.real(ETbark), label=r'$\overline{E}_{T}$')
+   axEbar.plot(k, np.real(EKbark), label=r'$\overline{E}_{K}$')
+   axEbar.set_xscale('log')
+   axEbar.set_yscale('log')
+   axEbar.set_xlim(k[1], k.max())
+   axEbar.set_ylim(1.0e-17, max(np.real(ETbark).max(), np.real(EKbark).max()))
+   axEbar.set_xlabel(r'$k$')
+   axEbar.set_ylabel(r'$\overline{E}\left(k\right)$')
+   axEbar.set_title(r'Spectrum at $y\approx y_{\textrm{wall}}$')
+   #axE.set_title(r'Spectrum at $y\approx y_{\textrm{mid}}$')
+   axEbar.legend()
+
+   figE.tight_layout()
+   figE.savefig('Ekbar_ywall.pdf')
+
 
    # Try to average over neighboring shells
-   Ek_ave = np.zeros(NF//2)
+   ETk_ave = np.zeros(int(kmax))
+   EKk_ave = np.zeros(int(kmax))
    for idx, val in enumerate(k):
        if val == 0:
-          Ek_ave[idx] = np.real(0.5 * (Ek[idx] + Ek[idx+1]))
+          ETk_ave[idx] = np.real(0.5 * (ETk[idx] + ETk[idx+1]))
+          EKk_ave[idx] = np.real(0.5 * (EKk[idx] + EKk[idx+1]))
        elif val == kmax - 1:
-          Ek_ave[idx] = np.real(0.5 * (Ek[idx-1] + Ek[idx]))
+          ETk_ave[idx] = np.real(0.5 * (ETk[idx-1] + ETk[idx]))
+          EKk_ave[idx] = np.real(0.5 * (EKk[idx-1] + EKk[idx]))
        else:
-          Ek_ave[idx] = np.real((Ek[idx-1] + Ek[idx] + Ek[idx+1]) / 3.0)
+          ETk_ave[idx] = np.real((ETk[idx-1] + ETk[idx] + ETk[idx+1]) / 3.0)
+          EKk_ave[idx] = np.real((EKk[idx-1] + EKk[idx] + EKk[idx+1]) / 3.0)
 
    figA, axA = plt.subplots(1,1, figsize=(10,0.75*10))
-   axA.plot(k, Ek_ave)
+   axA.plot(k, ETk_ave, label=r'$\left<E_{T}\left(k\right)\right>$')
+   axA.plot(k, EKk_ave, label=r'$\left<E_{K}\left(k\right)\right>$')
    axA.set_xscale('log')
    axA.set_yscale('log')
+   axA.set_xlim(k[1], k.max())
+   axA.set_ylim(1.0e-17, max(ETk_ave.max(), EKk_ave.max()))
    axA.set_xlabel(r'$k$')
-   axA.set_ylabel(r'$\left<E_{T}\left(k\right)\right>$')
+   axA.set_ylabel(r'$\left<E\left(k\right)\right>$')
    axA.set_title(r'Shell-averaged Spectrum at $y\approx y_{\textrm{wall}}$')
+   axA.legend()
 
    figA.tight_layout()
-   figA.savefig('ET_ave_ywall.pdf')
+   figA.savefig('Ek_shellave_ywall.pdf')
 
    # Create energy contours in Fourier space
    NF = Nx
-   kmax = NF // 2
-   Eky = np.zeros([NF//2, Nz], dtype=np.complex_)
-   #Eky = np.zeros([Nz, NF//2], dtype=np.complex_)
+   #kmax = NF // 2
+   #Eky = np.zeros([NF//2, Nz], dtype=np.complex_)
+   ETky = np.zeros([int(kmax), Nz], dtype=np.complex_)
    K, Z = np.meshgrid(k, z)
    for jj in range(Nz):
        for ii in range(Nx):
            kmag = abs(kx[ii])
            if (kmag < kmax):
-              Eky[int(kmag), jj] = Eky[int(kmag), jj] + \
+              ETky[int(kmag), jj] = ETky[int(kmag), jj] + \
                   0.5 * Tky[ii,jj] * np.conj(Tky[ii,jj])
 
    figC, axC = plt.subplots(1,1, figsize=(10,0.75*10))
-   CS = axC.contourf(K, Z, np.real(np.transpose(Eky)), locator=ticker.LogLocator())
+   CS = axC.contourf(K, Z, np.real(np.transpose(ETky)), locator=ticker.LogLocator())
    figC.colorbar(CS);
 
    plt.show()
