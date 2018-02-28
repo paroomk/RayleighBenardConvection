@@ -21,7 +21,8 @@ def plot_energy_spectra():
    xr = (Nx - 2.0) * n * np.pi / Nx
    x = np.linspace(xl, xr, Nx)
    #f = np.sin(2.0 * x)
-   f = np.exp(-x * x)
+   #f = np.exp(-x * x)
+   f = np.exp(x)
 
    fig, ax = plt.subplots(1,1, figsize=(10,0.75*10))
    ax.plot(x,f)
