@@ -51,22 +51,22 @@ def plot_energy_spectra():
    vky = np.fft.fft(vxy, axis=0) / Nx
    
    # Compute y-average
-   Tbar = np.zeros(Nx)
-   ubar = np.zeros(Nx)
-   vbar = np.zeros(Nx)
-   for ii in range(Nx):
-       for idy, deltaz in enumerate(dz):
-           Tbar[ii] += Txy[ii,idy+1] * deltaz
-           ubar[ii] += uxy[ii,idy+1] * deltaz
-           vbar[ii] += vxy[ii,idy+1] * deltaz
-   Tbar /= Lz
-   ubar /= Lz
-   vbar /= Lz
+   #Tbar = np.zeros(Nx)
+   #ubar = np.zeros(Nx)
+   #vbar = np.zeros(Nx)
+   #for ii in range(Nx):
+   #    for idy, deltaz in enumerate(dz):
+   #        Tbar[ii] += Txy[ii,idy+1] * deltaz
+   #        ubar[ii] += uxy[ii,idy+1] * deltaz
+   #        vbar[ii] += vxy[ii,idy+1] * deltaz
+   #Tbar /= Lz
+   #ubar /= Lz
+   #vbar /= Lz
 
    # Take FFT of y-averages
-   Tbark = np.fft.fft(Tbar) / Nx
-   ubark = np.fft.fft(ubar) / Nx
-   vbark = np.fft.fft(vbar) / Nx
+   #Tbark = np.fft.fft(Tbar) / Nx
+   #ubark = np.fft.fft(ubar) / Nx
+   #vbark = np.fft.fft(vbar) / Nx
 
    # Set up wavenumbers
    kx = np.zeros(Nx)
@@ -87,16 +87,25 @@ def plot_energy_spectra():
    k  = np.arange(0.0, kmax)
    for ii in range(Nx):
       kmag = abs(kx[ii])
+
+      Tbar = 0.0
+      ubar = 0.0
+      vbar = 0.0
+      for idy, deltaz in enumerate(dz):
+          Tbar += np.real(Tky[ii, idy+1] * np.conj(Tky[ii, idy+1])) * deltaz
+          ubar += np.real(uky[ii, idy+1] * np.conj(uky[ii, idy+1])) * deltaz
+          vbar += np.real(vky[ii, idy+1] * np.conj(vky[ii, idy+1])) * deltaz
+      Tbar = Tbar / Lz
+      ubar = ubar / Lz
+      vbar = vbar / Lz
+
       if (kmag < kmax):
          ETk[int(kmag)] = ETk[int(kmag)] + 0.5 * Tk[ii] * np.conj(Tk[ii])
-         ETbark[int(kmag)] = ETbark[int(kmag)] + \
-           0.5 * Tbark[ii] * np.conj(Tbark[ii])
+         ETbark[int(kmag)] = ETbark[int(kmag)] + 0.5 * Tbar
 
          EKk[int(kmag)] = EKk[int(kmag)] + \
              0.5 * (uk[ii] * np.conj(uk[ii]) + vk[ii] * np.conj(vk[ii]))
-         EKbark[int(kmag)] = EKbark[int(kmag)] + \
-             0.5 * (ubark[ii] * np.conj(ubark[ii]) + 
-                    vbark[ii] * np.conj(vbark[ii]))
+         EKbark[int(kmag)] = EKbark[int(kmag)] + 0.5 * (ubar + vbar)
 
    figE, axE = plt.subplots(1,1, figsize=(10,0.75*10))
    axE.plot(k, np.real(ETk), label=r'$E_{T}$')
@@ -176,6 +185,13 @@ def plot_energy_spectra():
    figC, axC = plt.subplots(1,1, figsize=(10,0.75*10))
    CS = axC.contourf(K, Z, np.real(np.transpose(ETky)), locator=ticker.LogLocator())
    figC.colorbar(CS);
+
+   # Create contours in physical space
+   X, Z = np.meshgrid(x, z)
+
+   figCp, axCp = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSp = axCp.contourf(X, Z, np.transpose(Txy), 101, cmap='jet')
+   figCp.colorbar(CSp);
 
    plt.show()
 
