@@ -29,7 +29,7 @@ def plot_energy_spectra():
    u = np.array(f['tasks/u'])
    v = np.array(f['tasks/w'])
 
-   # Get fieldls at specific time
+   # Get fields at specific time
    Txy = T[1,:,:]
    uxy = u[1,:,:]
    vxy = v[1,:,:]
@@ -39,22 +39,6 @@ def plot_energy_spectra():
    v = v[1,:,50] # Get v near the wall and at specific time
 
    #Ta = T - z[50]
-
-   # Energy
-   ET = 0.5 * T * T
-   EK = 0.5 * (u * u + v * v)
-
-   # Plot in physical space
-   #fig1, ax1 = plt.subplots(1,1)
-   #ax1.plot(x,T)
-
-   #fig2, ax2 = plt.subplots(1,1, figsize=(10,0.75*10))
-   #ax2.plot(x,ET)
-   #ax2.set_ylabel(r'$K_{T} = \frac{1}{2}T^{2}$')
-   #ax2.set_xlabel(r'$x$')
-   #ax2.set_xlabel(r'$x$')
-   #fig2.tight_layout()
-   #fig2.savefig('K_T_ymid.pdf')
 
    # Take FFT
    Tk = np.fft.fft(T) / Nx
