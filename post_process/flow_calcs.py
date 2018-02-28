@@ -63,6 +63,7 @@ def calc_Re():
    vrms = np.sqrt(vrms2)
    rms = np.sqrt(0.5 * (urms2 + vrms2))
 
+   # Compute Re based on different rms velocities
    Re = rms * h / nu
    Re_u = urms * h / nu
    Re_v = vrms * h / nu
@@ -70,6 +71,20 @@ def calc_Re():
    print("Re_rms = {0:25.16e},   rms = {1:25.16e}".format(Re, rms))
    print("Re_urms = {0:25.16e},   urms = {1:25.16e}".format(Re_u, urms))
    print("Re_vrms = {0:25.16e},   vrms = {1:25.16e}".format(Re_v, vrms))
+
+   print()
+   # Compute Re based off of max velocity in domain
+   umax = abs(uxy).max()
+   vmax = abs(vxy).max()
+   velmax = max(umax, vmax)
+
+   Re_umax = umax * h / nu
+   Re_vmax = vmax * h / nu
+   Re_vmax = velmax * h / nu
+
+   print("Re_umax = {0:25.16e},   umax = {1:25.16e}".format(Re_umax, umax))
+   print("Re_vmax = {0:25.16e},   vmax = {1:25.16e}".format(Re_umax, vmax))
+   print("Re_max = {0:25.16e},   velmax = {1:25.16e}".format(Re_umax, velmax))
 
 if __name__ == '__main__':
     calc_Re()
