@@ -52,7 +52,7 @@ def plot_energy_spectra():
    axE.set_yscale('log')
    #axE.set_xlim(k[1], k.max())
    #axE.set_ylim(1.0e-17, max(np.real(ETk).max(), np.real(EKk).max()))
-   axE.set_title(r'Energy spectrum of $\frac{1}{2}\sin^{2}\left(2x\right)$')
+   #axE.set_title(r'Energy spectrum of $\frac{1}{2}\sin^{2}\left(2x\right)$')
    axE.set_xlabel(r'$k$')
    axE.set_ylabel(r'$E\left(k\right)$')
    axE.legend()
