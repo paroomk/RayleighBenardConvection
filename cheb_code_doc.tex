@@ -292,15 +292,25 @@
     
     The following test case was used to verify the energy spectrum code. Here $x \in [0,2\pi]$ 
     
-    $$T(x) = sin(3x) + 4cos(t) + 5$$
+    $$T(x) = 4sin(x)sin(3x) + 4cos(t) + 5$$
+
+    The total energy in the system can be computed as follows:
+
+    $$E_t =\frac{1}{2} \int{0}{2\pi} T^2(x)dx = 34\pi $$
     
-    $$\hat {T}(k) = \frac{i}{2} \delta(k-3) + 2 \delta(k-1) + 5 \delta(k) -  \frac{i}{2} \delta(k+3) + 2 \delta(k+1)$$
+    $$\hat {T}(k) = i \delta(k-4) -i\delta(k-2) + 2 \delta(k-1) + 5 \delta(k) -  i \delta(k+4)+ i\delta(k+2) + 2 \delta(k+1)$$
     
-    $$ E(k) = 0.5 \hat {T}(k) * \hat {T}^*(k) = 0.125 \delta(k-3) + 2 \delta(k-1) + 12.5 \delta(k) + 0.125 \delta(k+3) + 2 \delta(k+1)$$
+    $$ E(k) = 0.5 \hat {T}(k) * \hat {T}^*(k) = 0.5 \delta(k-4) + 0.5 \delta(k-2) + 2 \delta(k-1) + 12.5 \delta(k) + 0.5 \delta(k+4) + 0.5 \delta(k-2)+  2 \delta(k+1)$$
     
     And finally after binning wavenumbers ($k'$ and $-k'$ in the 1D case), we have,
     
-    $$ E(k) = 0.25\delta(k-3) + 4\delta(k-1) + 12.5\delta(k)$$
+    $$ E(k) = \delta(k-4) + \delta(k-2) + 4\delta(k-1) + 12.5\delta(k)$$
+
+    Therefore, the total energy computed using Parseval's theorem is as follows,
+
+    $$E_t = 2\pi * (1 + 1 + 4 + 12.5) = 18.5 * 2\pi = 34\pi$$
+
+    The total energy computed from the spectra and the physical space match each other.
     
     Results from the code are shown in the figures \ref{fig:t1} and \ref{fig:t2}.
 

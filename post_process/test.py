@@ -40,7 +40,7 @@ def plot_energy_spectra():   # Note: computes thermal energy from perturbation t
    
    T_k  = np.zeros([Nx], dtype=np.complex_)
    
-   T = np.sin(3*x) + 4*np.cos(x) + 5
+   T = np.cos(3*x)*np.sin(x) + 4*np.cos(x) + 5
 
    fig1, ax1 = plt.subplots(1,figsize=[7,4])
    ax1.plot(x,T, 'g', label = 'Input function')
