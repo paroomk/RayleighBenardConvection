@@ -127,8 +127,8 @@ def plot_energy_spectra():
    #axE.set_title(r'Spectrum at $y\approx y_{\textrm{mid}}$')
    axEbar.legend()
 
-   figE.tight_layout()
-   figE.savefig('Ekbar_ywall.pdf')
+   figEbar.tight_layout()
+   figEbar.savefig('Ekbar_ywall.pdf')
 
 
    # Try to average over neighboring shells
