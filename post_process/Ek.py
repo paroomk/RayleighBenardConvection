@@ -33,10 +33,16 @@ def plot_energy_spectra():
    Txy = T[1,:,:]
    uxy = u[1,:,:]
    vxy = v[1,:,:]
+
+   # Get slice of field
    #T = T[10,:,Nz//2] # Get T near center and at specific time
    T = T[1,:,50] # Get T near the wall and at specific time
    u = u[1,:,50] # Get u near the wall and at specific time
    v = v[1,:,50] # Get v near the wall and at specific time
+
+   # Energies
+   KT = 0.5 * Txy * Txy
+   KV = 0.5 * (uxy * uxy + vxy * vxy)
 
    #Ta = T - z[50]
 
@@ -51,22 +57,22 @@ def plot_energy_spectra():
    vky = np.fft.fft(vxy, axis=0) / Nx
    
    # Compute y-average
-   Tbar = np.zeros(Nx)
-   ubar = np.zeros(Nx)
-   vbar = np.zeros(Nx)
-   for ii in range(Nx):
-       for idy, deltaz in enumerate(dz):
-           Tbar[ii] += Txy[ii,idy+1] * deltaz
-           ubar[ii] += uxy[ii,idy+1] * deltaz
-           vbar[ii] += vxy[ii,idy+1] * deltaz
-   Tbar /= Lz
-   ubar /= Lz
-   vbar /= Lz
+   #Tbar = np.zeros(Nx)
+   #ubar = np.zeros(Nx)
+   #vbar = np.zeros(Nx)
+   #for ii in range(Nx):
+   #    for idy, deltaz in enumerate(dz):
+   #        Tbar[ii] += Txy[ii,idy+1] * deltaz
+   #        ubar[ii] += uxy[ii,idy+1] * deltaz
+   #        vbar[ii] += vxy[ii,idy+1] * deltaz
+   #Tbar /= Lz
+   #ubar /= Lz
+   #vbar /= Lz
 
    # Take FFT of y-averages
-   Tbark = np.fft.fft(Tbar) / Nx
-   ubark = np.fft.fft(ubar) / Nx
-   vbark = np.fft.fft(vbar) / Nx
+   #Tbark = np.fft.fft(Tbar) / Nx
+   #ubark = np.fft.fft(ubar) / Nx
+   #vbark = np.fft.fft(vbar) / Nx
 
    # Set up wavenumbers
    kx = np.zeros(Nx)
@@ -85,18 +91,30 @@ def plot_energy_spectra():
    EKk = np.zeros(int(kmax), dtype=np.complex_)
    EKbark = np.zeros(int(kmax), dtype=np.complex_)
    k  = np.arange(0.0, kmax)
+   #Tbar = 0.0
+   #ubar = 0.0
+   #vbar = 0.0
    for ii in range(Nx):
       kmag = abs(kx[ii])
+
+      Tbar = 0.0
+      ubar = 0.0
+      vbar = 0.0
+      for idy, deltaz in enumerate(dz):
+          Tbar += np.real(Tky[ii, idy+1] * np.conj(Tky[ii, idy+1])) * deltaz
+          ubar += np.real(uky[ii, idy+1] * np.conj(uky[ii, idy+1])) * deltaz
+          vbar += np.real(vky[ii, idy+1] * np.conj(vky[ii, idy+1])) * deltaz
+      Tbar = Tbar / Lz
+      ubar = ubar / Lz
+      vbar = vbar / Lz
+
       if (kmag < kmax):
          ETk[int(kmag)] = ETk[int(kmag)] + 0.5 * Tk[ii] * np.conj(Tk[ii])
-         ETbark[int(kmag)] = ETbark[int(kmag)] + \
-           0.5 * Tbark[ii] * np.conj(Tbark[ii])
+         ETbark[int(kmag)] = ETbark[int(kmag)] + 0.5 * Tbar
 
          EKk[int(kmag)] = EKk[int(kmag)] + \
              0.5 * (uk[ii] * np.conj(uk[ii]) + vk[ii] * np.conj(vk[ii]))
-         EKbark[int(kmag)] = EKbark[int(kmag)] + \
-             0.5 * (ubark[ii] * np.conj(ubark[ii]) + 
-                    vbark[ii] * np.conj(vbark[ii]))
+         EKbark[int(kmag)] = EKbark[int(kmag)] + 0.5 * (ubar + vbar)
 
    figE, axE = plt.subplots(1,1, figsize=(10,0.75*10))
    axE.plot(k, np.real(ETk), label=r'$E_{T}$')
@@ -176,6 +194,58 @@ def plot_energy_spectra():
    figC, axC = plt.subplots(1,1, figsize=(10,0.75*10))
    CS = axC.contourf(K, Z, np.real(np.transpose(ETky)), locator=ticker.LogLocator())
    figC.colorbar(CS);
+
+   # Create temperature contours in physical space
+   X, Z = np.meshgrid(x, z)
+
+   figCp, axCp = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSp = axCp.contourf(X, Z, np.transpose(Txy), 101, cmap='jet')
+   figCp.colorbar(CSp, orientation='horizontal', aspect=100);
+   axCp.set_title(r'Temperature Contours')
+   axCp.set_aspect('equal')
+
+   figCp.tight_layout()
+   figCp.savefig('Tcontours.pdf')
+
+   # Create vertical velocity contours in physical space
+   figCv, axCv = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSv = axCv.contourf(X, Z, np.transpose(vxy), 101, cmap='jet')
+   figCv.colorbar(CSv, orientation='horizontal', aspect=100);
+   axCv.set_title(r'Vertical Velocity Contours')
+   axCv.set_aspect('equal')
+
+   figCv.tight_layout()
+   figCv.savefig('v-contours.pdf')
+
+   # Create horizontal velocity contours in physical space
+   figCu, axCu = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSu = axCu.contourf(X, Z, np.transpose(uxy), 101, cmap='jet')
+   figCu.colorbar(CSu, orientation='horizontal', aspect=100);
+   axCu.set_title(r'Horizontal Velocity Contours')
+   axCu.set_aspect('equal')
+
+   figCu.tight_layout()
+   figCu.savefig('u-contours.pdf')
+
+   # Create thermal energy contours in physical space
+   figCKT, axCKT = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSKT = axCKT.contourf(X, Z, np.transpose(KT), 101, cmap='magma')
+   figCKT.colorbar(CSKT, orientation='horizontal', aspect=100);
+   axCKT.set_title(r'$K_{T} = \frac{1}{2}T^{2}$')
+   axCKT.set_aspect('equal')
+
+   figCKT.tight_layout()
+   figCKT.savefig('KT-contours.pdf')
+
+   # Create kinetic energy contours in physical space
+   figCKV, axCKV = plt.subplots(1,1, figsize=(10,0.75*10))
+   CSKV = axCKV.contourf(X, Z, np.transpose(KV), 101, cmap='magma')
+   figCKV.colorbar(CSKV, orientation='horizontal', aspect=100);
+   axCKV.set_title(r'$K_{V} = \frac{1}{2}\left(u^{2} + v^{2}\right)$')
+   axCKV.set_aspect('equal')
+
+   figCKV.tight_layout()
+   figCKV.savefig('KV-contours.pdf')
 
    plt.show()
 
