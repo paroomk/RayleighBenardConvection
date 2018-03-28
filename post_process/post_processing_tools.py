@@ -5,11 +5,74 @@ import h5py
 import math
 import config    
 import numpy as np 
+from scipy import signal 
 import numpy.matlib 
 import matplotlib.pyplot as plt
 from os import listdir
 from os.path import isfile, join
 import matplotlib.cm as cm
+
+def opt_comparison(): #Computes L2 of error between turbulent and optimal structure
+    file = path + filename + str(28) + '.h5'
+    f = h5py.File(file,'r+')
+   
+    x = f.get('scales/x/1.0')
+    x = np.array(x)
+   
+    z = f.get('scales/z/1.0')
+    z = np.array(z)
+
+    T = f.get('tasks/bz')
+    T = np.array(T)
+   
+    ti = f.get('scales/sim_time')
+    t = np.array(ti)
+   
+    Nx = T.shape[1]
+    Ny = T.shape[2]
+    print(Nx,Ny)
+
+    for i in range(29,30):
+        file = path + filename + str(i) + '.h5'
+        print(file)
+        f = h5py.File(file,'r+')
+   
+        Ti = f.get('tasks/bz')
+        Ti = np.array(T)
+
+        ti = f.get('scales/sim_time')
+    
+        t  = np.concatenate((t, np.array(ti)),0)
+   
+        T  = np.concatenate((T, np.array(Ti)),0)
+
+    T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_1E7_10.txt')
+     
+    y   = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/y.txt')
+
+    Lx = 2*np.pi/alpha;
+    x_o = np.linspace(-Lx/2, Lx/2- Lx/Nx, Nx)
+     
+    Mx = 128 ; My = 201;
+
+    T_o = np.reshape(T_o,[My,Mx])
+
+    T_s = T[20,:,:] - np.tile(z,(Nx,1));
+    
+    y_l = Ny//2
+
+    T_y = T_s[:,y_l] 
+
+    threshold = 0.2
+    
+    #locs = signal.find_peaks_cwt(T_y*(T_y<threshold),np.arange(1,8)) 
+    locs = signal.argrelmax(T_y*(T_y<threshold)) 
+
+    print(len(locs))       
+
+    print(x[locs])
+
+    return
 
 def plot_contours():   #plots the last snapshot generated
     file = path + filename + str(nfiles) + '.h5'
@@ -387,11 +450,12 @@ def plot_energy_spectra():   # Note: computes thermal energy from perturbation t
    
    return 
 
-path = '../snapshots_1E7_10_24_2/'
+path = '/Volumes/Chest/snapshots_1E7_10_32/'
+#path = '../snapshots_1E7_10_32/'
 #path = '../1E7_4_opt12.01_wom/'
-filename = 'snapshots_1E7_10_24_2_s'
-caseid = '1E7_10_opt24.01_wom'
-case = 'Ra = 1E7, Pr = 10, Box size = 24.01*optimum, w/o mean flow'
+filename = 'snapshots_1E7_10_32_s'
+caseid = '1E7_10_opt32.01_wom'
+case = 'Ra = 1E7, Pr = 10, Box size = 32.01*optimum, w/o mean flow'
 #alpha = 0.4714574564629509E+001 # Wavenumber we're working with
 alpha = 0.1560021496301813E+002 # Wavenumber we're working with
  
@@ -402,7 +466,7 @@ nfiles = onlyfiles.shape[0]
 print(nfiles)
 #plot_BL()
 #plot_BLs()
-plot_energy_spectra()
+#plot_energy_spectra()
 #plot_Nus()
 #size = [0, -0.8]
 size = [64, 32, 24, 12, 6, 5, 3]
@@ -421,3 +485,4 @@ E_type = 'TE'
 #ax1.set_xlabel('size')
 #ax1.set_ylabel('Nu_avg')
 #plt.show()
+opt_comparison()
