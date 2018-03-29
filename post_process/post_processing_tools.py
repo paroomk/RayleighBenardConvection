@@ -5,7 +5,8 @@ import h5py
 import math
 import config    
 import numpy as np 
-from scipy import signal 
+#from scipy import signal 
+from detect_peaks import detect_peaks 
 import numpy.matlib 
 import matplotlib.pyplot as plt
 from os import listdir
@@ -22,7 +23,7 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
     z = f.get('scales/z/1.0')
     z = np.array(z)
 
-    T = f.get('tasks/bz')
+    T = f.get('tasks/b')
     T = np.array(T)
    
     ti = f.get('scales/sim_time')
@@ -37,7 +38,7 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
         print(file)
         f = h5py.File(file,'r+')
    
-        Ti = f.get('tasks/bz')
+        Ti = f.get('tasks/b')
         Ti = np.array(T)
 
         ti = f.get('scales/sim_time')
@@ -57,20 +58,19 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
 
     T_o = np.reshape(T_o,[My,Mx])
 
-    T_s = T[20,:,:] - np.tile(z,(Nx,1));
+    T_s = T[20,:,:] - np.matlib.repmat(z,Nx,1)
     
     y_l = Ny//2
 
     T_y = T_s[:,y_l] 
 
-    threshold = 0.2
-    
     #locs = signal.find_peaks_cwt(T_y*(T_y<threshold),np.arange(1,8)) 
-    locs = signal.argrelmax(T_y*(T_y<threshold)) 
+    #locs = signal.argrelmax(T_y*(T_y<threshold)) 
+    locs = detect_peaks(T_y, mph = 0.18, show = True  ) 
 
     print(len(locs))       
 
-    print(x[locs])
+    print(T_y[locs])
 
     return
 
