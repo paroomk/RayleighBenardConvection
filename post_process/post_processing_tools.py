@@ -4,8 +4,9 @@ import sys
 import h5py
 import math
 import config    
-import numpy as np 
-#from scipy import signal 
+import numpy as np
+from numpy import linalg as LA
+from scipy import interpolate 
 from detect_peaks import detect_peaks 
 import numpy.matlib 
 import matplotlib.pyplot as plt
@@ -13,7 +14,17 @@ from os import listdir
 from os.path import isfile, join
 import matplotlib.cm as cm
 
+def group_plume(plume_loc):
+    #Parameters required: # plumes and approximate plume locations
+    approx_plume_locs = [-4.8850243, -0.4028886, 3.61340715] 
+    k = (np.abs(approx_plume_locs-plume_loc)).argmin()
+
+    return k
+
 def opt_comparison(): #Computes L2 of error between turbulent and optimal structure
+
+    nplumes = 3  # Needs to be set beforehand!!!
+
     file = path + filename + str(28) + '.h5'
     f = h5py.File(file,'r+')
    
@@ -31,7 +42,8 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
    
     Nx = T.shape[1]
     Ny = T.shape[2]
-    print(Nx,Ny)
+
+    dx = x[1] - x[0]
 
     for i in range(29,30):
         file = path + filename + str(i) + '.h5'
@@ -48,31 +60,76 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
         T  = np.concatenate((T, np.array(Ti)),0)
 
     T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_1E7_10.txt')
-     
     y   = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/y.txt')
 
-    Lx = 2*np.pi/alpha;
-    x_o = np.linspace(-Lx/2, Lx/2- Lx/Nx, Nx)
-     
     Mx = 128 ; My = 201;
 
-    T_o = np.reshape(T_o,[My,Mx])
+    Lx = 2*np.pi/alpha;
+    x_o = np.linspace(-Lx/2, Lx/2- Lx/Mx, Mx)
+     
+    T_o = np.reshape(T_o,[Mx,My])
 
-    T_s = T[20,:,:] - np.matlib.repmat(z,Nx,1)
-    
-    y_l = Ny//2
+    y_l = Ny//2  # optimal solution is aligned based on the plume behavior along 
+    loc = Lx/2
 
-    T_y = T_s[:,y_l] 
+    i_r = np.nonzero((x > (-loc - dx/2)) & (x < (loc + dx/2)))  # range of indices covered by the optimal solution when placed at the x = 0
+    N0  = np.nonzero(x == 0.)                                    #index of the center of the box
 
-    #locs = signal.find_peaks_cwt(T_y*(T_y<threshold),np.arange(1,8)) 
-    #locs = signal.argrelmax(T_y*(T_y<threshold)) 
-    locs = detect_peaks(T_y, mph = 0.18, show = True  ) 
+    E_l2  = np.zeros((nplumes,len(t)))  #L2 norm of error
+    E_l2_j= np.zeros((10)) # 10 = max expected #plume detected
+    group = np.zeros(10)
+    group[:] = 100
 
-    print(len(locs))       
+    for i in range(0, len(t)):
+        T_s = T[i,:,:] - np.matlib.repmat(z,Nx,1)
+        T_y = T_s[:,y_l] 
 
-    print(T_y[locs])
+        plume_locs = detect_peaks(T_y, mph = 0.1) #, show = True  ) 
+        
+        x_i = x[i_r]
+
+        Xi,Yi = np.meshgrid(x_i,z)
+#        X,Y = np.meshgrid(x_o,-y)
+
+        fT_i = interpolate.interp2d(x_o,-y,T_o.T,kind = 'quintic')
+
+        T_i = fT_i(x_i,z) 
+ 
+#        Check interpolated plume here
+           
+#        fig, axarr = plt.subplots(1, figsize=(6,7))
+#        levels = np.linspace(-1,1,11)
+#        axarr.contourf(Xi, Yi, T_i,levels,cmap=cm.seismic)
+#        plt.show()
+
+        loc = x[plume_locs]
+
+        print(len(loc))
+
+        for j in range(0,len(loc)):
+            
+            N = np.nonzero((x > (loc[j] - dx/2)) & (x < (loc[j] + dx/2)))
+
+            shift = np.subtract(N,N0) #index of plume location from center
+            j_r = np.add(i_r,shift)   
+
+            T_p = T_s[j_r,:].T  
+
+            E_l2_j[j] = LA.norm(T_i-T_p[:,:,0]) 
+
+            group[j] = group_plume(x[N])  #returns plume group index
+            #print(E_l2_j[j],group[j])
+
+        for k in range(0,nplumes):
+            if len(E_l2_j[np.nonzero(group == k)]):
+               E_l2[k,i] = min(E_l2_j[np.nonzero(group == k)])
+               #print(E_l2[k,i],k)
+
+    #print(E_l2)
 
     return
+    
+    
 
 def plot_contours():   #plots the last snapshot generated
     file = path + filename + str(nfiles) + '.h5'
