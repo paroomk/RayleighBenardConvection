@@ -21,11 +21,11 @@ def group_plume(plume_loc):
 
     return k
 
-def opt_comparison(): #Computes L2 of error between turbulent and optimal structure
+def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal structure
 
     nplumes = 3  # Needs to be set beforehand!!!
 
-    file = path + filename + str(28) + '.h5'
+    file = path + filename + str(23) + '.h5'
     f = h5py.File(file,'r+')
    
     x = f.get('scales/x/1.0')
@@ -45,13 +45,13 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
 
     dx = x[1] - x[0]
 
-    for i in range(29,30):
+    for i in range(24,31):
         file = path + filename + str(i) + '.h5'
         print(file)
         f = h5py.File(file,'r+')
    
         Ti = f.get('tasks/b')
-        Ti = np.array(T)
+        Ti = np.array(Ti)
 
         ti = f.get('scales/sim_time')
     
@@ -69,14 +69,14 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
      
     T_o = np.reshape(T_o,[Mx,My])
 
-    y_l = Ny//2  # optimal solution is aligned based on the plume behavior along 
+    y_l = Ny//2  # optimal solution is aligned based on the plume behavior along z[y_l] 
     loc = Lx/2
 
     i_r = np.nonzero((x > (-loc - dx/2)) & (x < (loc + dx/2)))  # range of indices covered by the optimal solution when placed at the x = 0
     N0  = np.nonzero(x == 0.)                                    #index of the center of the box
 
     E_l2  = np.zeros((nplumes,len(t)))  #L2 norm of error
-    E_l2_j= np.zeros((10)) # 10 = max expected #plume detected
+    E_l2_j= np.zeros((10))              #10 = max expected #plume detected
     group = np.zeros(10)
     group[:] = 100
 
@@ -104,21 +104,24 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
 
         loc = x[plume_locs]
 
-        print(len(loc))
+        E_l2_j[:] = 0
+        group[:] = 100
+
+#        print(len(loc))
 
         for j in range(0,len(loc)):
-            
+
             N = np.nonzero((x > (loc[j] - dx/2)) & (x < (loc[j] + dx/2)))
 
             shift = np.subtract(N,N0) #index of plume location from center
-            j_r = np.add(i_r,shift)   
+            j_r = np.add(i_r,shift)              
 
-            T_p = T_s[j_r,:].T  
+            T_p = T_s[j_r % Nx,:].T  
 
             E_l2_j[j] = LA.norm(T_i-T_p[:,:,0]) 
+            #print(E_l2_j[j])
 
             group[j] = group_plume(x[N])  #returns plume group index
-            #print(E_l2_j[j],group[j])
 
         for k in range(0,nplumes):
             if len(E_l2_j[np.nonzero(group == k)]):
@@ -126,6 +129,15 @@ def opt_comparison(): #Computes L2 of error between turbulent and optimal struct
                #print(E_l2[k,i],k)
 
     #print(E_l2)
+    fig, axarr = plt.subplots(1, figsize=(6,7))
+    axarr.plot(t[E_l2[0,:]>0],E_l2[0,E_l2[0,:]>0],label = 'plume 1')
+    axarr.plot(t[E_l2[1,:]>0],E_l2[1,E_l2[1,:]>0],label = 'plume 2')
+    axarr.plot(t[E_l2[2,:]>0],E_l2[2,E_l2[2,:]>0],label = 'plume 3')
+    axarr.legend(loc='upper right')
+    axarr.set_xlabel('time')
+    axarr.set_ylabel('E_l2')
+
+    plt.show()
 
     return
     
