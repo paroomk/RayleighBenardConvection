@@ -21,6 +21,49 @@ def group_plume(plume_loc):
 
     return k
 
+def grad(F,x,z):
+    dx = x[1]-x[0]
+
+    for i,xi in enumerate(x):
+        Fx[i,:] = (F[i+1,:] - F[i-1,:])/(2*dx)
+
+    for i,zi in enumerate(z):
+        if i == 0:
+
+            dx1 = z[i+1] - z[i] 
+            dx2 = z[i+2] - z[i+1]
+
+            a = -(2*dx1 + dx2)/(dx1*(dx1+dx2))
+            b = (dx1 + dx2)/(dx1*dx2)
+            c = - dx1/(dx2*(dx1+dx2))
+
+            Fy[:,i] = a*F[:,i] + b*F[:,i+1] + c*F[:,i+2]
+
+        elif i == Nx-1:
+
+            dx1 = z[i] - z[i-1]              # N
+            dx2 = z[i-1] - z[i-2]           # N-1
+
+            a = (2*dx1 + dx2)/(dx1*(dx1+dx2))
+            b = -(dx1 + dx2)/(dx1*dx2)
+            c = dx1/(dx2*(dx1+dx2))
+
+            Fy[:,i] = a*F[:,i-2] + b*F[:,i-1] + c*F[:,i]
+
+        else :
+
+            dx1 = z[i] - z[i-1]
+            dx2 = z[i+1] - z[i] 
+
+            a = dx2/(dx1*(dx1+dx2))
+            b = (dx2-dx1)/(dx1*dx2)
+            c = dx1/(dx2*(dx1+dx2))
+
+            Fy[:,i] = a*F[:,i-1] + b*F[:,i] + c*F[:,i+1]
+
+
+    return Fx Fy
+
 def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal structure
 
     nplumes = 3  # Needs to be set beforehand!!!
@@ -117,8 +160,10 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
             j_r = np.add(i_r,shift)              
 
             T_p = T_s[j_r % Nx,:].T  
+            #[dT_px,dT_py] = grad(T_p,x,z)
 
             E_l2_j[j] = LA.norm(T_i-T_p[:,:,0]) 
+            #E_h1_j[j] = LA.norm(dT_i-dT_p[:,:,0]) 
             #print(E_l2_j[j])
 
             group[j] = group_plume(x[N])  #returns plume group index
