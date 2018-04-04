@@ -24,8 +24,14 @@ def group_plume(plume_loc):
 def grad(F,x,z):
     dx = x[1]-x[0]
 
+    Nx = x.shape[0]
+    Ny = z.shape[0]
+
+    Fx = np.zeros((Nx,Ny))
+    Fy = np.zeros((Nx,Ny))
+
     for i,xi in enumerate(x):
-        Fx[i,:] = (F[i+1,:] - F[i-1,:])/(2*dx)
+        Fx[i,:] = (F[(i+1) % Nx,:] - F[i-1,:])/(2*dx)
 
     for i,zi in enumerate(z):
         if i == 0:
@@ -39,7 +45,7 @@ def grad(F,x,z):
 
             Fy[:,i] = a*F[:,i] + b*F[:,i+1] + c*F[:,i+2]
 
-        elif i == Nx-1:
+        elif i == Ny-1:
 
             dx1 = z[i] - z[i-1]              # N
             dx2 = z[i-1] - z[i-2]           # N-1
@@ -48,27 +54,27 @@ def grad(F,x,z):
             b = -(dx1 + dx2)/(dx1*dx2)
             c = dx1/(dx2*(dx1+dx2))
 
-            Fy[:,i] = a*F[:,i-2] + b*F[:,i-1] + c*F[:,i]
+            Fy[:,i] = a*F[:,i] + b*F[:,i-1] + c*F[:,i-2]
 
         else :
 
             dx1 = z[i] - z[i-1]
             dx2 = z[i+1] - z[i] 
 
-            a = dx2/(dx1*(dx1+dx2))
+            a = -dx2/(dx1*(dx1+dx2))
             b = (dx2-dx1)/(dx1*dx2)
             c = dx1/(dx2*(dx1+dx2))
 
             Fy[:,i] = a*F[:,i-1] + b*F[:,i] + c*F[:,i+1]
 
 
-    return Fx Fy
+    return Fx, Fy
 
 def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal structure
 
     nplumes = 3  # Needs to be set beforehand!!!
 
-    file = path + filename + str(23) + '.h5'
+    file = path + filename + str(25) + '.h5'
     f = h5py.File(file,'r+')
    
     x = f.get('scales/x/1.0')
@@ -88,7 +94,7 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
 
     dx = x[1] - x[0]
 
-    for i in range(24,31):
+    for i in range(26, 28):
         file = path + filename + str(i) + '.h5'
         print(file)
         f = h5py.File(file,'r+')
@@ -102,52 +108,66 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
    
         T  = np.concatenate((T, np.array(Ti)),0)
 
-    T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_1E7_10.txt')
-    y   = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/y.txt')
-
     Mx = 128 ; My = 201;
 
     Lx = 2*np.pi/alpha;
     x_o = np.linspace(-Lx/2, Lx/2- Lx/Mx, Mx)
      
-    T_o = np.reshape(T_o,[Mx,My])
-
     y_l = Ny//2  # optimal solution is aligned based on the plume behavior along z[y_l] 
     loc = Lx/2
 
     i_r = np.nonzero((x > (-loc - dx/2)) & (x < (loc + dx/2)))  # range of indices covered by the optimal solution when placed at the x = 0
     N0  = np.nonzero(x == 0.)                                    #index of the center of the box
 
+    T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_1E7_10.txt')
+    y   = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/y.txt')
+
+    T_o = np.reshape(T_o,[Mx,My])
+    [T_ox,T_oy] = grad(T_o,x_o,y)
+
+    x_i = x[i_r]
+
+    Xi,Yi = np.meshgrid(x_i,z)
+
+    fT_i  = interpolate.interp2d(x_o,-y,T_o.T,kind = 'quintic')
+    fT_ix = interpolate.interp2d(x_o,-y,T_ox.T,kind = 'quintic')
+    fT_iy = interpolate.interp2d(x_o,-y,T_oy.T,kind = 'quintic')
+
+    T_i  = fT_i(x_i,z) 
+    T_ix = fT_ix(x_i,z) 
+    T_iy = fT_iy(x_i,z)
+ 
     E_l2  = np.zeros((nplumes,len(t)))  #L2 norm of error
+    E_h1  = np.zeros((nplumes,len(t)))  #H1 semi-norm of error
     E_l2_j= np.zeros((10))              #10 = max expected #plume detected
+    E_h1_j= np.zeros((10))              #10 = max expected #plume detected
     group = np.zeros(10)
     group[:] = 100
 
-    for i in range(0, len(t)):
+    for i in range(0,len(t)):
         T_s = T[i,:,:] - np.matlib.repmat(z,Nx,1)
+        [T_sx,T_sy] = grad(T_s,x,z)
         T_y = T_s[:,y_l] 
+#        print(T_sx,T_sy)
 
         plume_locs = detect_peaks(T_y, mph = 0.1) #, show = True  ) 
         
-        x_i = x[i_r]
-
-        Xi,Yi = np.meshgrid(x_i,z)
 #        X,Y = np.meshgrid(x_o,-y)
+        X,Y = np.meshgrid(x,z)
 
-        fT_i = interpolate.interp2d(x_o,-y,T_o.T,kind = 'quintic')
-
-        T_i = fT_i(x_i,z) 
  
 #        Check interpolated plume here
            
 #        fig, axarr = plt.subplots(1, figsize=(6,7))
 #        levels = np.linspace(-1,1,11)
-#        axarr.contourf(Xi, Yi, T_i,levels,cmap=cm.seismic)
+        #axarr.contourf(Xi, Yi, T_ix,levels,cmap=cm.seismic)
+#        axarr.contourf(X,Y, T_sy.T,cmap=cm.seismic)
 #        plt.show()
 
         loc = x[plume_locs]
 
         E_l2_j[:] = 0
+        E_h1_j[:] = 0
         group[:] = 100
 
 #        print(len(loc))
@@ -159,11 +179,13 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
             shift = np.subtract(N,N0) #index of plume location from center
             j_r = np.add(i_r,shift)              
 
-            T_p = T_s[j_r % Nx,:].T  
-            #[dT_px,dT_py] = grad(T_p,x,z)
+            T_p = T_s[j_r % Nx,:].T 
+ 
+            T_px = T_sx[j_r % Nx,:].T  
+            T_py = T_sy[j_r % Nx,:].T  
 
             E_l2_j[j] = LA.norm(T_i-T_p[:,:,0]) 
-            #E_h1_j[j] = LA.norm(dT_i-dT_p[:,:,0]) 
+            E_h1_j[j] = LA.norm(np.dstack((T_ix-T_px[:,:,0],T_iy-T_py[:,:,0]))) 
             #print(E_l2_j[j])
 
             group[j] = group_plume(x[N])  #returns plume group index
@@ -171,17 +193,24 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
         for k in range(0,nplumes):
             if len(E_l2_j[np.nonzero(group == k)]):
                E_l2[k,i] = min(E_l2_j[np.nonzero(group == k)])
+               E_h1[k,i] = min(E_h1_j[np.nonzero(group == k)])
                #print(E_l2[k,i],k)
 
     #print(E_l2)
-    fig, axarr = plt.subplots(1, figsize=(6,7))
-    axarr.plot(t[E_l2[0,:]>0],E_l2[0,E_l2[0,:]>0],label = 'plume 1')
-    axarr.plot(t[E_l2[1,:]>0],E_l2[1,E_l2[1,:]>0],label = 'plume 2')
-    axarr.plot(t[E_l2[2,:]>0],E_l2[2,E_l2[2,:]>0],label = 'plume 3')
-    axarr.legend(loc='upper right')
-    axarr.set_xlabel('time')
-    axarr.set_ylabel('E_l2')
+    fig, axarr = plt.subplots(2, figsize=(6,7))
+    axarr[0].plot(t[E_l2[0,:]>0],E_l2[0,E_l2[0,:]>0],label = 'plume 1')
+    axarr[0].plot(t[E_l2[1,:]>0],E_l2[1,E_l2[1,:]>0],label = 'plume 2')
+    axarr[0].plot(t[E_l2[2,:]>0],E_l2[2,E_l2[2,:]>0],label = 'plume 3')
+    axarr[0].legend(loc='upper right')
+    axarr[0].set_xlabel('time')
+    axarr[0].set_ylabel('E_l2')
 
+    axarr[1].plot(t[E_h1[0,:]>0],E_h1[0,E_h1[0,:]>0],label = 'plume 1')
+    axarr[1].plot(t[E_h1[1,:]>0],E_h1[1,E_h1[1,:]>0],label = 'plume 2')
+    axarr[1].plot(t[E_h1[2,:]>0],E_h1[2,E_h1[2,:]>0],label = 'plume 3')
+    axarr[1].legend(loc='upper right')
+    axarr[1].set_xlabel('time')
+    axarr[1].set_ylabel('E_h1')
     plt.show()
 
     return
@@ -582,8 +611,8 @@ print(nfiles)
 #plot_BLs()
 #plot_energy_spectra()
 #plot_Nus()
-#size = [0, -0.8]
-size = [64, 32, 24, 12, 6, 5, 3]
+size = [32]
+#size = [64, 32, 24, 12, 6, 5, 3]
 E_type = 'ThE'
 #plot_energyspectra()
 E_type = 'KE'
