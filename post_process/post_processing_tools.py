@@ -187,7 +187,7 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
 
             E_l2_j[j] = np.sqrt(integrate_z(np.mean((T_i-T_p[:,:,0])**2,axis = 1),z)*Lx)
             #E_h1_j[j] = LA.norm(np.dstack((T_ix-T_px[:,:,0],T_iy-T_py[:,:,0]))) 
-            E_h1_j[j] = np.sqrt(integrate_z(np.mean((T_ix-T_px[:,:,0])**2,axis = 1),z)*Lx + integrate_z(np.sum((T_iy-T_py[:,:,0])**2,axis = 1),z)*dx)
+            E_h1_j[j] = np.sqrt(integrate_z(np.mean((T_ix-T_px[:,:,0])**2,axis = 1),z)*Lx + integrate_z(np.sum((T_iy-T_py[:,:,0])**2,axis = 1),z)*Lx)
             #print(E_l2_j[j])
 
         E_l2[i] = min(E_l2_j)
