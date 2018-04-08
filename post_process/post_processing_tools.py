@@ -7,6 +7,7 @@ import config
 import numpy as np
 from numpy import linalg as LA
 from scipy import interpolate 
+from scipy import integrate 
 from detect_peaks import detect_peaks 
 import numpy.matlib 
 import matplotlib.pyplot as plt
@@ -14,6 +15,11 @@ from os import listdir
 from os.path import isfile, join
 import matplotlib.cm as cm
 
+def integrate_z(Fz,z):
+
+    F = np.trapz(Fz, z, axis=0)
+    
+    return F
 
 def grad(F,x,z):
     dx = x[1]-x[0]
@@ -66,8 +72,6 @@ def grad(F,x,z):
     return Fx, Fy
 
 def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal structure
-
-    nplumes = 3  # Needs to be set beforehand!!!
 
     file = path + filename + str(23) + '.h5'
     f = h5py.File(file,'r+')
@@ -180,8 +184,11 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
             T_px = T_sx[j_r % Nx,:].T  
             T_py = T_sy[j_r % Nx,:].T  
 
-            E_l2_j[j] = LA.norm(T_i-T_p[:,:,0]) 
-            E_h1_j[j] = LA.norm(np.dstack((T_ix-T_px[:,:,0],T_iy-T_py[:,:,0]))) 
+            #E_l2_j[j] = LA.norm(T_i-T_p[:,:,0])
+
+            E_l2_j[j] = np.sqrt(integrate_z(np.mean((T_i-T_p[:,:,0])**2,axis = 1),z)*dx)
+            #E_h1_j[j] = LA.norm(np.dstack((T_ix-T_px[:,:,0],T_iy-T_py[:,:,0]))) 
+            E_h1_j[j] = np.sqrt(integrate_z(np.mean((T_ix-T_px[:,:,0])**2,axis = 1),z)*dx + integrate_z(np.mean((T_iy-T_py[:,:,0])**2,axis = 1),z)*dx)
             #print(E_l2_j[j])
 
         E_l2[i] = min(E_l2_j)
