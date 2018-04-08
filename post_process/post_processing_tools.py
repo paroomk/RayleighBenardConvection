@@ -120,7 +120,6 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
 
     T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_1E7_10.txt')
 
-#    for i in range(0,My):
     c =  (np.arange(0,My)) / (My - 1.)
     y = np.cos(c*np.pi);
 
@@ -186,9 +185,9 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
 
             #E_l2_j[j] = LA.norm(T_i-T_p[:,:,0])
 
-            E_l2_j[j] = np.sqrt(integrate_z(np.mean((T_i-T_p[:,:,0])**2,axis = 1),z)*dx)
+            E_l2_j[j] = np.sqrt(integrate_z(np.mean((T_i-T_p[:,:,0])**2,axis = 1),z)*Lx)
             #E_h1_j[j] = LA.norm(np.dstack((T_ix-T_px[:,:,0],T_iy-T_py[:,:,0]))) 
-            E_h1_j[j] = np.sqrt(integrate_z(np.mean((T_ix-T_px[:,:,0])**2,axis = 1),z)*dx + integrate_z(np.mean((T_iy-T_py[:,:,0])**2,axis = 1),z)*dx)
+            E_h1_j[j] = np.sqrt(integrate_z(np.mean((T_ix-T_px[:,:,0])**2,axis = 1),z)*Lx + integrate_z(np.sum((T_iy-T_py[:,:,0])**2,axis = 1),z)*dx)
             #print(E_l2_j[j])
 
         E_l2[i] = min(E_l2_j)
