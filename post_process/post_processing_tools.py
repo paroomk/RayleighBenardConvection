@@ -369,14 +369,63 @@ def plot_BLs():
     
     return 
 
+def plot_optBL():    #plots momentum boundary layer
+   v_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/V_5E6_7.txt')
+   u_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/U_5E6_7.txt')
+
+   Mx = 128
+   My = 201
+
+   Lx = 2*np.pi/alpha;
+
+   c =  (np.arange(0,My)) / (My - 1.)
+   y = -np.cos(c*np.pi);
+   x_o = np.linspace(-Lx/2, Lx/2- Lx/Mx, Mx)
+
+   v_o = np.reshape(v_o,[Mx,My])
+   u_o = np.reshape(u_o,[Mx,My])
+
+   [v_ox,v_oy] = grad(v_o,x_o,y)
+   [u_ox,u_oy] = grad(u_o,x_o,y)
+
+   b = 0
+
+   for i,xi in enumerate(x_o):
+       uxi = u_ox[i,:]
+       vyi = v_oy[i,:]
+       b = (np.multiply(uxi,uxi) + np.multiply(vyi,vyi))/Mx + b
+
+   H = 2
+
+   y_s = 1E-3*H
+   y_e = 5E-1*H
+
+   j_s = (np.abs(y-y_s)).argmin()
+   j_e = (np.abs(y-y_e)).argmin()
+       
+   j_max = b[j_s:j_e].argmax()
+   print(y[j_max]/H)
+
+   np.savetxt("BL"+ caseid + ".txt", b[j_s:j_e])
+   np.savetxt("z_H"+ caseid + ".txt", y[j_s:j_e]/H)
+
+   fig1, ax1 = plt.subplots(1,figsize = [5,4])
+   ax1.semilogx(y[j_s:j_e]/H,b[j_s:j_e])
+   ax1.set_xlabel('z/H')
+   ax1.set_ylabel('(u_x)^2 + (w_z)^2')
+   ax1.set_title(case)
+   plt.show()
+
+   return
+
 def plot_BL():    #plots momentum boundary layer
-   file = path + filename + str(3) + '.h5'
+   file = path + filename + str(8) + '.h5'
    f = h5py.File(file,'r+')
 
    dt = 0.25   
    
    t1 = 100
-   t2 = 200  
+   t2 = 125  
    
    f1 = math.floor(t1/(50*dt)) 
    f2 = math.floor(t2/(50*dt))
@@ -431,7 +480,7 @@ def plot_BL():    #plots momentum boundary layer
        b = b + bi/dN
 
    z_s = 1E-3*H
-   z_e = 1E-1*H
+   z_e = 5E-1*H
 
    j_s = (np.abs(z-z_s)).argmin()
    j_e = (np.abs(z-z_e)).argmin()
@@ -591,21 +640,22 @@ def plot_energy_spectra():   # Note: computes thermal energy from perturbation t
    
    return 
 
-path = '/Volumes/Chest/snapshots_1E7_10_32/'
+path = '/Volumes/Chest/snapshots_5E6_7_20/'
 #path = '../snapshots_1E7_10_32/'
 #path = '../1E7_4_opt12.01_wom/'
-filename = 'snapshots_1E7_10_32_s'
-caseid = '1E7_10_opt32.01_wom'
-case = 'Ra = 1E7, Pr = 10, Box size = 32.01*optimum, w/o mean flow'
+filename = 'snapshots_5E6_7_20_s'
+caseid = '5E6_7_20'
+case = 'Ra = 5E6, Pr = 7, Box size = optimum, w/o mean flow'
 #alpha = 0.4714574564629509E+001 # Wavenumber we're working with
-alpha = 0.1560021496301813E+002 # Wavenumber we're working with
+#alpha = 0.1560021496301813E+002 # Wavenumber we're working with
+alpha = 0.5080785292900329E+001; #5E6, 7
  
 onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
 onlyfiles = np.array(onlyfiles)
 nfiles = onlyfiles.shape[0]
 
 print(nfiles)
-#plot_BL()
+plot_optBL()
 #plot_BLs()
 #plot_energy_spectra()
 #plot_Nus()
@@ -626,4 +676,4 @@ E_type = 'TE'
 #ax1.set_xlabel('size')
 #ax1.set_ylabel('Nu_avg')
 #plt.show()
-opt_comparison()
+#opt_comparison()
