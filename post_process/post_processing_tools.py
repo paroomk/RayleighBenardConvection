@@ -67,13 +67,13 @@ def grad(F,x,z):
 
             Fy[:,i] = a*F[:,i-1] + b*F[:,i] + c*F[:,i+1]
     
-    print(-np.sum(Fy[:,0],axis = 0)/Nx )
+    #print(-np.sum(Fy[:,0],axis = 0)/Nx )
 
     return Fx, Fy
 
 def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal structure
 
-    file = path + filename + str(23) + '.h5'
+    file = path + filename + str(520) + '.h5'
     f = h5py.File(file,'r+')
    
     x = f.get('scales/x/1.0')
@@ -93,7 +93,7 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
 
     dx = x[1] - x[0]
 
-    for i in range(24, 25):
+    for i in range(520, 521):
         file = path + filename + str(i) + '.h5'
         print(file)
         f = h5py.File(file,'r+')
@@ -126,7 +126,6 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
     T_o = np.reshape(T_o,[Mx,My])
     [T_ox,T_oy] = grad(T_o,x_o,-y)
 
-#`    quit()
 
     x_i = x[i_r]
 
@@ -154,17 +153,18 @@ def opt_comparison(): #Computes L2 of error between turbulent plumes and optimal
         T_y = T_s[:,y_l] 
 #        print(T_sx,T_sy)
 
-#        X,Y = np.meshgrid(x_o,-y)
+        X,Y = np.meshgrid(x_o,-y)
 #        X,Y = np.meshgrid(x,z)
 
  
 #        Check interpolated plume here
            
-#        fig, axarr = plt.subplots(1, figsize=(6,7))
-#        levels = np.linspace(-1,1,11)
-        #axarr.contourf(Xi, Yi, T_ix,levels,cmap=cm.seismic)
+        fig, axarr = plt.subplots(1, figsize=(6,7))
+        levels = np.linspace(-1,1,11)
+        axarr.contourf(X, Y, T_o.T,levels,cmap=cm.seismic)
 #        axarr.contourf(X,Y, T_sy.T,cmap=cm.seismic)
-#        plt.show()
+        plt.show()
+        quit()
 
 #        loc = x[plume_locs]
 
@@ -371,7 +371,6 @@ def plot_BLs():
 
 def plot_optBL():    #plots momentum boundary layer
    v_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/V_5E6_7.txt')
-   u_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/U_5E6_7.txt')
 
    Mx = 128
    My = 201
@@ -379,21 +378,25 @@ def plot_optBL():    #plots momentum boundary layer
    Lx = 2*np.pi/alpha;
 
    c =  (np.arange(0,My)) / (My - 1.)
-   y = -np.cos(c*np.pi);
+   y = -np.cos(c*np.pi) + 1
    x_o = np.linspace(-Lx/2, Lx/2- Lx/Mx, Mx)
 
    v_o = np.reshape(v_o,[Mx,My])
-   u_o = np.reshape(u_o,[Mx,My])
 
    [v_ox,v_oy] = grad(v_o,x_o,y)
-   [u_ox,u_oy] = grad(u_o,x_o,y)
 
+   X,Y = np.meshgrid(x_o,y)
+           
+   fig, axarr = plt.subplots(1, figsize=(6,7))
+   p1 = axarr.contourf(X, Y, v_oy.T,cmap=cm.seismic)
+   cbar = plt.colorbar(p1)
+   plt.show()
+   
    b = 0
 
    for i,xi in enumerate(x_o):
-       uxi = u_ox[i,:]
        vyi = v_oy[i,:]
-       b = (np.multiply(uxi,uxi) + np.multiply(vyi,vyi))/Mx + b
+       b =  b +2*(vyi*vyi)/Mx
 
    H = 2
 
@@ -404,7 +407,7 @@ def plot_optBL():    #plots momentum boundary layer
    j_e = (np.abs(y-y_e)).argmin()
        
    j_max = b[j_s:j_e].argmax()
-   print(y[j_max]/H)
+#   print(y[j_max]/H)
 
    np.savetxt("BL"+ caseid + ".txt", b[j_s:j_e])
    np.savetxt("z_H"+ caseid + ".txt", y[j_s:j_e]/H)
@@ -432,7 +435,7 @@ def plot_BL():    #plots momentum boundary layer
 
    print(f1,f2)
 
-   dN = (f2-f1+1)*50
+   dN = 1 #(f2-f1+1)*50
 
    x = f.get('scales/x/1.0')
    x = np.array(x)
@@ -453,7 +456,9 @@ def plot_BL():    #plots momentum boundary layer
    bi = 0
    b = 0
    
-   for k in range(f1, f2):
+   p = 10
+
+   for k in range(f1, f1+1):
        file = path + filename + str(k) + '.h5'
        print(file)
        f = h5py.File(file,'r+')
@@ -467,17 +472,12 @@ def plot_BL():    #plots momentum boundary layer
        ti = f.get('scales/sim_time')
 
        for i,xi in enumerate(x):
-           if i == 0:
-              uxi = ( 3.*u[k,i,:] - 4.*u[k,i-1,:] + u[k,i-2,:])/(2*dx)
-           elif i == Nx-1:
-              uxi = (-3.*u[k,i,:] + 4.*u[k,i-1,:] - u[k,i-2,:])/(2*dx)
-           else :
-              uxi = (u[k,i+1,:] - u[k,i-1,:])/(2*dx)
-           wzi = wz[k,i,:]
+           wzi = wz[p,i,:]
+           
+           bi =  2*(wzi*wzi)/Nx + bi
 
-           bi = (np.multiply(uxi,uxi) + np.multiply(wzi,wzi))/Nx + bi
 
-       b = b + bi/dN
+   b = bi/dN
 
    z_s = 1E-3*H
    z_e = 5E-1*H
@@ -486,7 +486,7 @@ def plot_BL():    #plots momentum boundary layer
    j_e = (np.abs(z-z_e)).argmin()
        
    j_max = b[j_s:j_e].argmax()
-   print(z[j_max]/H)
+#   print(z[j_max]/H)
 
    np.savetxt("BL"+ caseid + ".txt", b[j_s:j_e])
    np.savetxt("z_H"+ caseid + ".txt", z[j_s:j_e]/H)
@@ -640,11 +640,11 @@ def plot_energy_spectra():   # Note: computes thermal energy from perturbation t
    
    return 
 
-path = '/Volumes/Chest/snapshots_5E6_7_20/'
+caseid = '5E6_7_20'
+path = '/Volumes/Chest/snapshots_' + caseid + '/'
 #path = '../snapshots_1E7_10_32/'
 #path = '../1E7_4_opt12.01_wom/'
-filename = 'snapshots_5E6_7_20_s'
-caseid = '5E6_7_20'
+filename = 'snapshots_'+ caseid+ '_s'
 case = 'Ra = 5E6, Pr = 7, Box size = optimum, w/o mean flow'
 #alpha = 0.4714574564629509E+001 # Wavenumber we're working with
 #alpha = 0.1560021496301813E+002 # Wavenumber we're working with
@@ -655,8 +655,9 @@ onlyfiles = np.array(onlyfiles)
 nfiles = onlyfiles.shape[0]
 
 print(nfiles)
+#opt_comparison()
+plot_BL()
 plot_optBL()
-#plot_BLs()
 #plot_energy_spectra()
 #plot_Nus()
 size = [32]
@@ -676,4 +677,3 @@ E_type = 'TE'
 #ax1.set_xlabel('size')
 #ax1.set_ylabel('Nu_avg')
 #plt.show()
-#opt_comparison()
