@@ -366,8 +366,8 @@ def plot_BLs():
     
     return 
 
-def plot_optBL():    #plots momentum boundary layer
-   v_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/V_5E6_7.txt')
+def plot_optTBL():    #plots momentum boundary layer through x[j]
+   T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_5E6_7.txt')
 
    Mx = 128
    My = 201
@@ -378,23 +378,21 @@ def plot_optBL():    #plots momentum boundary layer
    y = -np.cos(c*np.pi) + 1
    x_o = np.linspace(-Lx/2, Lx/2- Lx/Mx, Mx)
 
-   v_o = np.reshape(v_o,[Mx,My])
-
-   [v_ox,v_oy] = grad(v_o,x_o,y)
+   T_o = np.reshape(T_o,[Mx,My])
 
    X,Y = np.meshgrid(x_o,y)
            
    fig, axarr = plt.subplots(1, figsize=(6,7))
-   p1 = axarr.contourf(X, Y, v_oy.T,cmap=cm.seismic)
+   p1 = axarr.contourf(X, Y, T_o.T,cmap=cm.seismic)
    cbar = plt.colorbar(p1)
-   plt.show()
+   #plt.show()
    
    b = 0
-   j = 32 #Mx//2 #Only Centre
+   j = Mx//2 #Only Centre
 
    for i,xi in enumerate(x_o[j:j+1]):
-       vyi = v_oy[j,:]
-       b =  b +2*(vyi*vyi) #/Mx
+       Ti = T_o[i,:]
+       b =  b + Ti#/Mx
 
    H = 2
 
@@ -407,19 +405,19 @@ def plot_optBL():    #plots momentum boundary layer
    j_max = b[j_s:j_e].argmax()
 #   print(y[j_max]/H)
 
-   np.savetxt("BL2"+ optcaseid + ".txt", b[j_s:j_e])
+   np.savetxt("BL_T"+ optcaseid + ".txt", b[j_s:j_e])
    np.savetxt("z_H"+ optcaseid + ".txt", y[j_s:j_e]/H)
 
    fig1, ax1 = plt.subplots(1,figsize = [5,4])
    ax1.semilogx(y[j_s:j_e]/H,b[j_s:j_e])
    ax1.set_xlabel('z/H')
-   ax1.set_ylabel('(u_x)^2 + (w_z)^2')
+   ax1.set_ylabel('T(x_0,z)')
    ax1.set_title(case)
    plt.show()
 
    return
 
-def find_optBL():  #finds locations and times of optimal match
+def find_optMBL():  #finds locations and times of optimal match
    file = path + filename + str(79) + '.h5'
    f = h5py.File(file,'r+')
     
@@ -522,7 +520,7 @@ def find_optBL():  #finds locations and times of optimal match
     
    return
 
-def plot_BL():    #plots momentum boundary layer
+def plot_MBL():    #plots momentum boundary layer
    file = path + filename + str(79) + '.h5'
    f = h5py.File(file,'r+')
 
@@ -800,7 +798,7 @@ alpha = 0.5080785292900329E+001; #5E6, 7
 #print(nfiles)
 #opt_comparison()
 #find_optBL()
-#plot_BL()
+plot_optTBL()
 #plot_energy_spectra()
 plot_Nu()
 size = [32]
