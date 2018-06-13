@@ -350,6 +350,226 @@ def plot_Nu():
    plt.show()
    return
 
+def track_localNu(xloc): #finds Nu(t) in an optimal box centered at xloc
+    
+   file = path + filename + str(50) + '.h5'
+   f = h5py.File(file,'r+')
+   
+   dT = f.get('tasks/bz')
+   dT = np.array(dT)
+   
+   ti = f.get('scales/sim_time')
+   t = np.array(ti)
+   
+   x = f.get('scales/x/1.0')
+   x = np.array(x)
+   
+   Nx = dT.shape[1]
+   Ny = dT.shape[2]
+   
+   Lx = 2*np.pi/alpha;
+   
+   dx = x[1]-x[0]
+   
+   loc = Lx/8
+   
+   x = x - dx*Nx/2
+   
+   i_r = np.nonzero((x > (-loc - dx/2)) & (x < (loc + dx/2)))  # range of indices covered by the optimal solution when placed at the x = 0
+   
+   N0 = np.argmin(np.abs(x-0.0))
+   j  = np.argmin(np.abs(x-xloc))
+   
+   shift = np.subtract(j,N0) #index of plume location from center
+   i_opt = np.add(i_r,shift)
+   
+   print(np.argmin(np.abs(x-xloc)))
+   
+   print(x[i_opt % Nx])
+   
+   Nx_opt = i_opt.shape[1]
+   
+   print(Nx_opt)
+
+   Nu = - dT[:,i_opt % Nx,Ny-1].sum(2)/Nx_opt + 1;
+   
+   #print(np.shape(dT[:,i_opt % Nx,1]))
+   
+   #print(Nu) 
+
+   for i in range(51, 79):
+       file = path + filename + str(i) + '.h5'
+       print(file)
+       f = h5py.File(file,'r+')
+   
+       dT = f.get('tasks/bz')
+       dT = np.array(dT)
+
+       ti = f.get('scales/sim_time')
+
+       Nui = - dT[:,i_opt % Nx,Ny-1].sum(2)/Nx_opt + 1; 
+   
+       t  = np.concatenate((t, np.array(ti)),0)
+   
+       Nu  = np.concatenate((Nu, np.array(Nui)),0)
+
+   t1 = 600 
+   t2 = 900
+  
+   i1 = (np.abs(t-t1)).argmin()
+   i2 = (np.abs(t-t2)).argmin()
+
+   Nu_avg = Nu[i1:i2].sum(0)/(i2-i1+1)   
+   
+   #print('Time-averaged Nusselt number = %s '%(Nu_avg))
+
+   fig1, ax1 = plt.subplots(1,figsize = [5,4])
+   ax1.plot(t,Nu)
+   ax1.set_xlabel('time')
+   ax1.set_ylabel('Nu')
+   ax1.set_title(case)
+
+   print(sys.getsizeof(Nu_avg))
+   print(Nu.shape[0])
+
+   plt.show()
+    
+    
+   return
+
+def spatial_correlation():
+    file = path + filename + str(50) + '.h5'
+    f = h5py.File(file,'r+')
+   
+    x = f.get('scales/x/1.0')
+    x = np.array(x)
+   
+    z = f.get('scales/z/1.0')
+    z = np.array(z) - 1
+
+    T = f.get('tasks/b')
+    T = np.array(T)
+   
+    ti = f.get('scales/sim_time')
+    t = np.array(ti)
+   
+    Nx = T.shape[1]
+    Ny = T.shape[2]
+
+    dx = x[1] - x[0]
+    
+    x = x - dx*Nx/2
+    
+    #print(x)
+
+    for i in range(51,79):
+        file = path + filename + str(i) + '.h5'
+        print(file)
+        f = h5py.File(file,'r+')
+   
+        Ti = f.get('tasks/b')
+        Ti = np.array(Ti)
+
+        ti = f.get('scales/sim_time')
+    
+        t  = np.concatenate((t, np.array(ti)),0)
+   
+        T  = np.concatenate((T, np.array(Ti)),0)
+
+    Mx = 128 ; My = 201;
+
+    Lx = 2*np.pi/alpha;
+    x_o = np.linspace(-Lx/2, Lx/2 - Lx/Mx, Mx)
+    
+    print(x_o)
+     
+    #y_l = Ny//2  # optimal solution is aligned based on the plume behavior along z[y_l] 
+    loc = Lx/8 #adjust loc to restrict region of interest.
+
+    i_r = np.nonzero((x > (-loc - dx/2)) & (x < (loc + dx/2)))   #range of indices covered by the optimal solution when placed at the x = 0
+    print(x[i_r])
+    N0  = np.nonzero(x == 0.)                                    #index of the center of the box
+
+    T_o = np.loadtxt('/Volumes/Work/Fluids_project/Programs/POD/optimal_solns/optimal_solutions/T_5E6_7.txt')
+
+    c =  (np.arange(0,My)) / (My - 1.)
+    y = np.cos(c*np.pi);
+    
+    #print(z)
+
+    T_o = np.reshape(T_o,[Mx,My])
+
+
+    x_i = x[i_r]
+
+    Xi,Yi = np.meshgrid(x_i,z)
+
+    fT_i  = interpolate.interp2d(x_o,-y,T_o.T,kind = 'linear')
+
+    T_i  = fT_i(x_i,z) 
+    
+    nT_i =  np.sqrt(integrate_z(np.mean(T_i**2,axis = 1)*Lx,z))  #int (T_i dx dz) in the optimal box  
+ 
+    cT  = np.zeros(len(t))  #L2 norm of error
+    x_max  = np.zeros(len(t))  #H1 semi-norm of error
+    cT_j= np.zeros(Nx) 
+    
+    X,Y = np.meshgrid(x_i,z)
+    
+    #Check interpolated plume here
+    
+    fig, axarr = plt.subplots(1, figsize=(6,7))
+    levels = np.linspace(-1,1,11)
+    axarr.contourf(X, Y, T_i,levels,cmap=cm.seismic)
+    plt.show()             
+
+    quit()
+
+    for i in range(0,len(t)):
+        T_s = T[i,:,:] - np.matlib.repmat(z,Nx,1)
+        #T_y = T_s[:,y_l] 
+
+        cT_j[:] = 0
+
+        for j in range(0,Nx):
+
+            shift = np.subtract(j,N0) #index of plume location from center
+            j_r = np.add(i_r,shift)              
+
+            T_p = T_s[j_r % Nx,:].T 
+ 
+            #cT_j[j] = LA.norm(T_i-T_p[:,:,0])
+            
+            nT_p =  np.sqrt(integrate_z(np.mean(T_p[:,:,0]**2,axis = 1)*Lx,z))    #int (T_p dx dz) in the optimal box                      
+
+            cT_j[j] = (integrate_z(np.mean((T_i*T_p[:,:,0]),axis = 1)*Lx,z))/(nT_i*nT_p)
+            #print(cT_j[j])
+
+        cT[i] = max(cT_j)
+        j_max = np.argmax(cT_j)
+        x_max[i] = x[j_max]
+
+    #print(cT)
+    fig, axarr = plt.subplots(2, figsize=(6,7))
+    axarr[0].plot(t[cT[:]>0],cT[cT[:]>0])
+    axarr[0].legend(loc='upper right')
+    axarr[0].set_xlabel('time')
+    axarr[0].set_ylabel('Correlation of temperature fields')
+    
+    axarr[1].plot(t[cT[:]>0],x_max[cT[:]>0])
+    axarr[1].legend(loc='upper right')
+    axarr[1].set_xlabel('time')
+    axarr[1].set_ylabel('x_max')
+    plt.show()
+    
+    cT_max = max(cT)
+    j_max  = np.argmax(cT)
+    x_gmax = x_max[j_max]
+    
+    print(cT_max,t[j_max],x_gmax)
+
+    return
+
 def plot_BLs(): 
     f = open('fileread', 'r')
     fig1, ax1 = plt.subplots(1,figsize = [5,4])
@@ -382,13 +602,13 @@ def plot_optTBL():    #plots momentum boundary layer through x[j]
 
    X,Y = np.meshgrid(x_o,y)
            
-   fig, axarr = plt.subplots(1, figsize=(6,7))
-   p1 = axarr.contourf(X, Y, T_o.T,cmap=cm.seismic)
-   cbar = plt.colorbar(p1)
+   #fig, axarr = plt.subplots(1, figsize=(6,7))
+   #p1 = axarr.contourf(X, Y, T_o.T,cmap=cm.seismic)
+   #cbar = plt.colorbar(p1)
    #plt.show()
    
    b = 0
-   j = Mx//2 #Only Centre
+   j = 0 #Mx//2 #Only Centre
 
    for i,xi in enumerate(x_o[j:j+1]):
        Ti = T_o[i,:]
@@ -520,6 +740,109 @@ def find_optMBL():  #finds locations and times of optimal match
     
    return
 
+def find_optTBL():  #finds locations and times of optimal match
+   file = path + filename + str(79) + '.h5'
+   f = h5py.File(file,'r+')
+    
+   x = f.get('scales/x/1.0')
+   x = np.array(x)
+   
+   z = f.get('scales/z/1.0')
+   z = np.array(z) #+ 1   # -0.5-0.5 t0 0-1
+
+   H = 2;
+   
+   Nx = x.shape[0]
+   Ny = z.shape[0]
+
+   dx = x[1]-x[0]
+
+   i = Nx//2
+
+   f1 = 50
+   f2 = 79
+   
+   dN = (f2-f1)*50
+
+   bi = 0
+   b = 0
+   
+   z_s = 1E-3*H
+   z_e = 5E-1*H
+
+   j_s = (np.abs(z-z_s)).argmin()
+   j_e = (np.abs(z-z_e)).argmin()
+
+   bx = np.zeros([Nx,Ny])
+   eil2 = np.zeros([Nx])
+   el2 = np.zeros([dN])
+   x_min = np.zeros([dN])
+
+   t = []
+
+   b = np.loadtxt('BL_T' + optcaseid + '.txt') #bottom wall momentum BL
+   #b = np.loadtxt('BL' + optcaseid + '.txt') 
+   z_H = np.loadtxt('z_H' + optcaseid + '.txt')
+   print(z_H)
+   print(z[j_s:j_e]/H)
+
+   fb_i  = interpolate.interp1d(z_H,b,kind ='cubic',fill_value='extrapolate') 
+   b_i = fb_i(z[j_s:j_e]/H)
+
+   for k in range(f1, f2):
+       file = path + filename + str(k) + '.h5'
+       print(file)
+       f = h5py.File(file,'r+')
+       
+       T = f.get('tasks/b')
+       T  = np.array(T)
+
+       ti = f.get('scales/sim_time')
+       t  = np.concatenate((t, np.array(ti)),0)
+
+       for p in range(0,50):
+           for i,xi in enumerate(x):
+               Ti = T[p,i,:] #bottom momentum BL
+               #Ti = np.flip(T[p,i,:],0) #top momentum BL
+               bx[i,:] =  Ti - (z-1)
+#               bi =  Ti/Nx + bi
+               eil2[i] = LA.norm(b_i - bx[i,j_s:j_e])
+#           bi = 0
+           x_min[50*(k-f1) + p] = x[np.argmin(eil2)]
+           el2[50*(k-f1) + p] = np.min(eil2)
+    
+   #============================================================================
+   # fig1, ax1 = plt.subplots(1,figsize = [5,4])
+   # ax1.plot(z_H,b)
+   # ax1.plot(z[j_s:j_e]/H,b_i)
+   # ax1.set_xlabel('z_H')
+   # ax1.set_ylabel('b')
+   # ax1.set_title(case)
+   # plt.show()   
+   #============================================================================
+    
+   fig1, ax1 = plt.subplots(1,figsize = [5,4])
+   ax1.plot(t,el2)
+   ax1.set_xlabel('time')
+   ax1.set_ylabel('L2 norm of error')
+   ax1.set_title(case)
+   plt.show()  
+   
+   fig2, ax2 = plt.subplots(1,figsize = [5,4])
+   ax2.plot(t[el2<0.1],x_min[el2<0.1],'*')
+#   ax2.plot(t,x_min,'*')
+   ax2.set_xlabel('time')
+   ax2.set_ylabel('location of optimal match')
+   ax2.set_title(case)
+   plt.show() 
+   
+   
+   print(t[el2<0.1])
+   print(el2[el2<0.1])
+   print(x_min[el2<0.1])    
+    
+   return
+
 def plot_MBL():    #plots momentum boundary layer
    file = path + filename + str(79) + '.h5'
    f = h5py.File(file,'r+')
@@ -623,7 +946,127 @@ def plot_MBL():    #plots momentum boundary layer
 
    ax2.semilogx(z_H,b, label = '5E6_7_opt2', dashes = [2,2])
    
-   ii = np.argmin(np.abs(x-11.89453125))
+   ii = np.argmin(np.abs(x-15.078125))
+
+   j = np.arange(ii,ii+1,1) 
+   
+   print(x[j])  
+
+   for i,xi in enumerate(x[j]):
+       ax2.semilogx(z[j_s:j_e]/H,bx[j[i],j_s:j_e], label = 'x = ' + str(x[j[i]]) + ' at t =' + str(t[jj]) )
+   #ax2.set_xlabel('time')
+   ax2.set_xlabel('z/H')
+   ax2.set_ylabel('(u_x)^2 + (w_z)^2')
+   ax2.legend(loc='upper left')
+   ax2.set_title(case)
+   plt.show()
+
+   return
+
+def plot_TBL():    #plots momentum boundary layer
+   file = path + filename + str(79) + '.h5'
+   f = h5py.File(file,'r+')
+
+   dt = 0.25   
+   
+   t1 = 100
+   t2 = 125  
+   
+   f1 = math.floor(t1/(50*dt)) 
+   f2 = math.floor(t2/(50*dt))
+   
+   print(f1,f2)
+
+   dN = 1 #(f2-f1+1)*50
+
+   x = f.get('scales/x/1.0')
+   x = np.array(x)
+   
+   z = f.get('scales/z/1.0')
+   z = np.array(z) #+ 1   # -0.5-0.5 t0 0-1
+
+   H = 2;
+   
+   Nx = x.shape[0]
+   Ny = z.shape[0]
+
+
+   dx = x[1]-x[0]
+
+   i = Nx//2
+
+   #k = 12
+   f1 = 77
+   bi = 0
+   b = 0
+   
+   z_s = 1E-3*H
+   z_e = 5E-1*H
+
+   j_s = (np.abs(z-z_s)).argmin()
+   j_e = (np.abs(z-z_e)).argmin()
+   print(j_s,j_e)
+
+#   th = np.zeros((f2-f1+1)*50)
+   bx = np.zeros([Nx,Ny])
+
+   t = []
+   
+   jj = 4 #23 #47 #0
+
+   for k in range(f1, f1+1):
+       file = path + filename + str(k) + '.h5'
+       print(file)
+       f = h5py.File(file,'r+')
+       
+       T = f.get('tasks/b')
+       T  = np.array(T)
+
+       ti = f.get('scales/sim_time')
+       t  = np.concatenate((t, np.array(ti)),0)
+
+       for p in range(jj,jj+1):
+       
+           for i,xi in enumerate(x):
+               Ti = T[p,i,:] #bottom momentum BL
+               #wzi = np.flip(wz[p,i,:],0) #top momentum BL
+               bx[i,:] =  Ti - (z - 1)
+               bi =  Ti/Nx + bi
+
+#               print(bx) 
+           b = bi/dN
+       
+#           j_max = b[0:j_e].argmax()
+
+#           th[(k-f1)*50 + p] = z[j_max]/H     #BL thickness
+           #print(th)
+           bi = 0
+#   print(z[j_max]/H)
+
+   #np.savetxt("BL"+ caseid + ".txt", b[j_s:j_e])
+   #np.savetxt("z_H"+ caseid + ".txt", z[j_s:j_e]/H)
+
+   fig1, ax1 = plt.subplots(1,figsize = [5,4])
+   ax1.semilogx(z[j_s:j_e]/H,b[j_s:j_e])
+   ax1.set_xlabel('z/H')
+   ax1.set_ylabel('T(xi,z)')
+   ax1.set_title(case)
+   plt.show()
+
+   line = '5E6_7_opt'
+
+   b = np.loadtxt('BL_T' + line + '.txt')
+   z_H = np.loadtxt('z_H' + line + '.txt')
+   
+
+   fig2, ax2 = plt.subplots(1,figsize = [5,4])
+   ax2.semilogx(z_H,b, label = line, dashes = [6,2])
+
+#   b = np.loadtxt('BL' + line + '.txt')
+
+#   ax2.semilogx(z_H,b, label = '5E6_7_opt2', dashes = [2,2])
+   
+   ii = np.argmin(np.abs(x-15.078125))
 
    j = np.arange(ii,ii+1,1) 
    
@@ -796,11 +1239,13 @@ alpha = 0.5080785292900329E+001; #5E6, 7
 #nfiles = onlyfiles.shape[0]
 
 #print(nfiles)
+#spatial_correlation()
 #opt_comparison()
-#find_optBL()
-plot_optTBL()
+#find_optTBL()
+#plot_TBL()
 #plot_energy_spectra()
-plot_Nu()
+#plot_Nu()
+track_localNu(-2.421875)
 size = [32]
 #size = [64, 32, 24, 12, 6, 5, 3]
 E_type = 'ThE'
